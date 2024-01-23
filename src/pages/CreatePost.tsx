@@ -1,10 +1,12 @@
 import { useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
 import Button from "../components/Button";
+import http from "../utils/http";
 
 type FormValues = {
   title: string;
-  avatar: File;
+  avatar: FileList;
+  text: string;
 };
 
 const CreatePost = () => {
@@ -17,8 +19,35 @@ const CreatePost = () => {
   } = form;
 
   // This function is called when the fields are correctly validated
-  const onSubmit = () => {
+  const onSubmit = async (data: FormValues) => {
+    // console.log(
+
+    const allData = {
+      ...data,
+      avatar: data.avatar[0],
+    };
+
+    try {
+      await http.get("/sanctum/csrf-cookie");
+
+      const response = await http.post("/api/post/insert", allData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      const postDataId = response.data.postData.id;
+
+      // const upload = await http.post(
+      //   `/api/post/uploadFile/${postDataId}`,
+      //   data
+      // );
+      console.log(response);
+    } catch (exception: any) {
+      console.log(exception);
+    }
     console.log("Formular Submitted");
+
+    return;
 
     //Logic for login
   };
@@ -30,7 +59,7 @@ const CreatePost = () => {
 
   return (
     <>
-      <section className="flex items-center justify-center w-screen h-screen sm:p-10 bg-slate-400">
+      <section className="flex items-center justify-center w-screen min-h-screen bg-slate-400">
         <form
           onSubmit={handleSubmit(onSubmit, onError)}
           noValidate
@@ -45,17 +74,27 @@ const CreatePost = () => {
               type="text"
               id="title"
               {...register("title", {
-                required: {
-                  value: true,
-                  message: "Please enter a title for this post",
-                },
+                // required: {
+                //   value: true,
+                //   message: "Please enter a title for this post",
+                // },
               })}
             />
             <p className="text-red-600">{errors.title?.message}</p>
           </div>
 
-          <div className="flex flex-col">
-            <label htmlFor="file">Chose Image</label>
+          <div>
+            <textarea
+              className="w-full p-2 border-2 border-gray-300 rounded "
+              placeholder="Post Discription ..."
+              {...register("text", {})}
+            ></textarea>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label htmlFor="file" className="text-lg font-semibold">
+              Chose Image
+            </label>
             <input
               type="file"
               id="file"
@@ -68,7 +107,13 @@ const CreatePost = () => {
             />
           </div>
 
-          <Button disabled={isSubmitting} value="Create" type="submit" />
+          <Button
+            styles=""
+            disabled={isSubmitting}
+            value="Create"
+            type="submit"
+            onClick={() => null}
+          />
         </form>
       </section>
       <DevTool control={control} />

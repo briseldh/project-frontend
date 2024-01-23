@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const http = axios.create({
-    baseURL: 'localhost:80',
+    baseURL: 'http://localhost:80',
     // Required by Laravel Sanctum
     withCredentials: true,
     withXSRFToken: true,

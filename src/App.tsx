@@ -7,35 +7,42 @@ import {
 
 // Layouts
 import RootLayout from "./layouts/RootLayout";
+import PrivateLayout from "./layouts/PrivateLayout";
 
 // Errors
 import RootError from "./errors/RootError";
 
 // Pages
 import Login from "./pages/Login";
-import Home from "./pages/Home";
+import Home, { homeLoader } from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
 import CreatePost from "./pages/CreatePost";
-import Profile from "./pages/Profile";
+import Profile, { profileLoader } from "./pages/Profile";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <>
       <Route errorElement={<RootError />}>
-        <Route path="/" element={<RootLayout />}>
-          <Route index element={<Home />} />
-
-          <Route path="/create-post" element={<CreatePost />} />
-
-          <Route path="profile" element={<Profile />} />
-
-          <Route path="*" element={<NotFound />} />
-        </Route>
-
         <Route path="/login" element={<Login />} />
 
         <Route path="/register" element={<Register />} />
+
+        <Route path="*" element={<NotFound />} />
+
+        <Route path="/" element={<RootLayout />}>
+          <Route index element={<Home />} loader={homeLoader} />
+
+          <Route element={<PrivateLayout />}>
+            <Route path="/create-post" element={<CreatePost />} />
+
+            <Route
+              path="profile"
+              element={<Profile />}
+              loader={profileLoader}
+            />
+          </Route>
+        </Route>
       </Route>
     </>
   )
