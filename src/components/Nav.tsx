@@ -17,23 +17,6 @@ const Nav = () => {
     console.log("Nav Toggeld");
   };
 
-  // const handleClick = () => {
-  //   const hamMenuIcon = document.querySelector("#ham-menu");
-  //   const navBar = document.querySelector("#nav-bar");
-  //   const navLinks = document.querySelectorAll("li");
-
-  //   navBar?.classList.toggle("active");
-  //   hamMenuIcon?.classList.toggle("fa-times");
-  //   // console.log(navLinks);
-
-  //   navLinks.forEach((link) => {
-  //     link.addEventListener("click", () => {
-  //       navBar?.classList.remove("active");
-  //       hamMenuIcon?.classList.toggle("fa-times");
-  //     });
-  //   });
-  // };
-
   return (
     <>
       {openMenu ? (

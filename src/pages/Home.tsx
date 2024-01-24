@@ -52,7 +52,8 @@ type LoaderData = {
 
 const Home = () => {
   const data = useLoaderData() as LoaderData;
-  // const { auth } = useContext(AuthContext);
+  const { auth } = useContext(AuthContext);
+  console.log(auth);
 
   const [noCommentSection, setCommentSection] = useState(true);
   const [posts, setPosts] = useState(data.posts);
@@ -64,7 +65,9 @@ const Home = () => {
     posts.map(async (post: any) => {
       try {
         const user = await http.get(`/api/getUser/${post.user_id}`);
-        return user;
+        console.log(user);
+
+        return user; // How to make the user available in the whole component?
       } catch (exception: any) {
         console.log(exception);
       }

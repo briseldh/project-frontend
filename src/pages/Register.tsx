@@ -63,6 +63,7 @@ const Register = () => {
           id: userData.id,
           username: userData.name,
           role: role,
+          requestStatus: "sent",
         };
       });
 

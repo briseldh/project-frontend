@@ -35,21 +35,14 @@ const CreatePost = () => {
           "Content-Type": "multipart/form-data",
         },
       });
-      const postDataId = response.data.postData.id;
 
-      // const upload = await http.post(
-      //   `/api/post/uploadFile/${postDataId}`,
-      //   data
-      // );
       console.log(response);
     } catch (exception: any) {
       console.log(exception);
     }
+
     console.log("Formular Submitted");
-
     return;
-
-    //Logic for login
   };
 
   // This function is called when when we have validation errors
