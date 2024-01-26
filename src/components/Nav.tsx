@@ -4,8 +4,8 @@ import { AuthContext } from "../context/AuthProvider";
 import LogoutBtn from "./LogoutBtn";
 
 // Icons:
-import menu from "../assets/imgs/bars-solid.svg";
-import xMark from "../assets/imgs/xmark-solid.svg";
+import menu from "../assets/icons/bars-solid.svg";
+import xMark from "../assets/icons/xmark-solid.svg";
 
 const Nav = () => {
   const [openMenu, setOpenMenu] = useState(true);
@@ -20,7 +20,7 @@ const Nav = () => {
   return (
     <>
       {openMenu ? (
-        <nav className="fixed z-10 flex flex-col-reverse items-center justify-between w-screen gap-5 px-12 py-6 bg-blue-500 sm:flex-row sm:justify-end sm:py-4">
+        <nav className="fixed z-50 flex flex-col-reverse items-center justify-between w-screen gap-5 px-12 py-6 bg-blue-500 sm:flex-row sm:justify-end sm:py-4">
           <ul className="flex flex-col items-center gap-6 text-white sm:flex-row">
             <li className="text-lg font-medium">
               <NavLink to="/">Home</NavLink>
@@ -53,7 +53,7 @@ const Nav = () => {
           </div>
         </nav>
       ) : (
-        <nav className="flex items-center justify-end px-6 py-4 bg-blue-500">
+        <nav className="fixed z-50 flex items-center justify-end w-screen px-6 py-4 bg-blue-500">
           <div onClick={handleMenuToggleClick} className="sm:hidden">
             <img src={menu} alt="burger-menu" className="h-[21.6px]" />
           </div>
