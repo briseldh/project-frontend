@@ -28,25 +28,26 @@ type Styles = {
 };
 
 const defaultStyles: Styles = {
-  postSection: "flex flex-col gap-5 p-6 bg-gray-400",
+  postSection:
+    "flex flex-col gap-5 px-4 pt-4 bg-gray-400 xs:w-full sm:pt-8 sm:h-auto md:flex md:items-center pb-4 sm:pb-8",
   closeCommentsXmark: "hidden",
-  postWrapper: "overflow-hidden bg-gray-300 rounded-lg",
+  postWrapper: "overflow-hidden bg-gray-300 rounded-lg md:w-[70%] lg:w-[710px]",
   viewAllCommentsLink:
-    "px-4 pt-2 font-medium text-gray-800 cursor-pointer hover:underline",
+    "px-4 pt-2 font-medium text-gray-800 cursor-pointer hover:underline inline-block",
   commentsWrapper: "overflow-hidden h-[220px] bg-gray-300",
   writeNewComment: "hidden",
 };
 
 const commentsOpenStyles: Styles = {
   postSection:
-    "absolute z-10 flex flex-col h-screen bg-gray-400 top-20 xs:w-full sm:px-4 sm:pt-4 sm:h-auto sm:pb-24 md:flex md:items-center",
+    "z-10 flex flex-col px-4 pt-4 bg-gray-400 top-20 xs:w-full sm:pt-8 sm:h-auto md:flex md:items-center pb-4",
   closeCommentsXmark:
     "flex justify-end w-full p-3 bg-gray-300 border-b border-gray-100 rounded-t-lg md:w-[730px]",
   postWrapper:
-    "h-full bg-gray-300 xs:w-full sm:h-[500px] sm:overflow-auto sm:rounded-b-lg md:w-[730px]",
+    "h-full bg-gray-300 xs:w-full sm:h-[700px] sm:overflow-auto sm:rounded-b-lg md:w-[730px]",
   viewAllCommentsLink: "hidden",
   commentsWrapper: "h-auto pb-32 bg-gray-300 sm:pb-0",
-  writeNewComment: "fixed bottom-0 left-0 w-full p-3 bg-gray-300 sm:sticky",
+  writeNewComment: "sticky bottom-0 left-0 w-full p-3 bg-gray-300 sm:sticky",
 };
 
 const Profile = () => {
@@ -57,7 +58,7 @@ const Profile = () => {
   const [uploads, setUploads] = useState(data.userUploads);
   const [styles, setStyles] = useState(defaultStyles);
 
-  console.log(uploads);
+  // console.log(uploads);
 
   const { auth } = useContext(AuthContext);
   // console.log(auth);
@@ -65,13 +66,12 @@ const Profile = () => {
   //Handling functions
   const handleEditProfileClick = () => null;
 
-  const handleViewAllCommentsClick = () => {
+  const handleViewAllCommentsClick = (
+    e: React.MouseEvent<HTMLParagraphElement, MouseEvent>
+  ) => {
     setStyles(commentsOpenStyles);
-    // styles === defaultStyles
-    //   ? setStyles(commentsOpenStyles)
-    //   : setStyles(defaultStyles);
 
-    console.log(styles);
+    console.log(e);
   };
 
   const handleCloseCommentsClick = () => {
@@ -109,36 +109,53 @@ const Profile = () => {
     <>
       <section className="flex flex-col w-full pt-10">
         <div className="bg-gray-400 w-full h-[150px] absolute rounded-b-2xl"></div>
-        <section className="flex flex-col items-center w-full bg-gray-300 pb-7">
-          <div className="z-10 w-1/2 pt-16">
+
+        <section className="flex flex-col items-center w-full px-6 bg-gray-300 pb-7 md:flex-row md:justify-between lg:justify-start">
+          <div className="z-10 w-1/2 pt-16 xs:w-2/5 sm:w-1/3 md:w-1/4 lg:w-[230px]">
             <img src={profile} alt="profile-pic" />
           </div>
-          <h1 className="text-2xl font-semibold">Briseld</h1>
-          <Button
-            type={undefined}
-            value="Edit Profile"
-            disabled={undefined}
-            onClick={handleEditProfileClick}
-            styles=""
-          />
+
+          <div className="flex flex-col items-center w-1/2 gap-2 pt-2 md:h-full md:w-4/5 md:pt-40 md:flex-row md:justify-between md:pl-5 ">
+            <h1 className="z-10 text-2xl font-semibold md:text-3xl md:font-bold">
+              {data.userData.name}
+            </h1>
+
+            <Button
+              type={undefined}
+              value="Edit Profile"
+              disabled={undefined}
+              onClick={handleEditProfileClick}
+              styles="self-center w-[75%] xs:[50%] sm:w-[40%] p-1 text-white bg-slate-500 rounded drop-shadow-md lg:font-bold lg:w-[30%]"
+            />
+          </div>
         </section>
       </section>
-      <section id="post-section" className={styles.postSection}>
-        <div
-          id="close-comments-xmark"
-          onClick={handleCloseCommentsClick}
-          className={styles.closeCommentsXmark}
-        >
-          <img src={xMark} alt="x-mark" className="w-6 h-6 cursor-pointer" />
-        </div>
-        {posts?.map((post) => {
-          return (
-            <div id="post-wrapper" key={post.id} className={styles.postWrapper}>
+      {posts?.map((post) => {
+        return (
+          <section
+            id="post-section"
+            key={post.id}
+            className={styles.postSection}
+          >
+            <div
+              id="close-comments-xmark"
+              onClick={handleCloseCommentsClick}
+              className={styles.closeCommentsXmark}
+            >
+              <img
+                src={xMark}
+                alt="x-mark"
+                className="w-6 h-6 cursor-pointer"
+              />
+            </div>
+
+            <div id="post-wrapper" className={styles.postWrapper}>
               <h1 className="px-4 pt-2 text-lg font-semibold">{post.title}</h1>
               <p className="px-4 pb-2 text-gray-800">{post.text}</p>
 
               {uploads?.map((upload) => {
-                console.log(upload);
+                if (post.id !== upload.post_id) return;
+                // console.log(upload);
 
                 return (
                   <div key={upload.id} className="xs:w-full">
@@ -156,7 +173,11 @@ const Profile = () => {
                   <img src={likeIcon} alt="like-icon" className="w-5 h-5" />
                   <p>Like</p>
                 </div>
-                <div className="flex items-center gap-1">
+
+                <div
+                  onClick={handleViewAllCommentsClick}
+                  className="flex items-center gap-1 cursor-pointer"
+                >
                   <img
                     src={commentIcon}
                     alt="comment-icon"
@@ -169,8 +190,8 @@ const Profile = () => {
               {/* All comments wrapper */}
               <div id="comments-wrapper" className={styles.commentsWrapper}>
                 <p
-                  id="view-all-comments-link"
-                  onClick={handleViewAllCommentsClick}
+                  id={post.id}
+                  onClick={(e) => handleViewAllCommentsClick(e)}
                   className={styles.viewAllCommentsLink}
                 >
                   View all comments
@@ -236,9 +257,9 @@ const Profile = () => {
                 </form>
               </div>
             </div>
-          );
-        })}
-      </section>
+          </section>
+        );
+      })}
     </>
   );
 };

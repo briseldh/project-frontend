@@ -75,9 +75,11 @@ const Home = () => {
     formState: { isSubmitting },
   } = form;
 
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = (data: FormValues, e: any) => {
     posts.map(async (post: any) => {
       try {
+        if (post.id != e.target.id) return;
+
         await http.get("/sanctum/csrf-cookie");
         const response = await http.post(
           `/api/comment/insert/${post.id}`,
@@ -188,6 +190,7 @@ const Home = () => {
                             {/* Comment Section  */}
                             <div className="flex flex-col items-center justify-center gap-4 ">
                               <form
+                                id={post.id}
                                 onSubmit={handleSubmit(onSubmit, onError)}
                                 noValidate
                                 className="w-[90%] flex flex-col justify-start gap-1 "
@@ -195,11 +198,14 @@ const Home = () => {
                                 <label htmlFor="comment">
                                   Write a comment:
                                 </label>
+
                                 <input
                                   className="w-full h-10 p-2 border-2 border-gray-300 rounded-2xl"
                                   type="text"
+                                  id="text"
                                   {...register("text", {})}
                                 />
+
                                 <Button
                                   styles="w-[30%] md:w-[40%] p-1 text-white text-xs bg-slate-500 rounded drop-shadow-md"
                                   disabled={isSubmitting}

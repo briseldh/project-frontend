@@ -15,7 +15,7 @@ export type ProfileLoaderData = {
 
 export type Post = {
     created_at: string;
-    id: number;
+    id: string | undefined;
     text: string;
     title: string;
     updated_at: string;
@@ -35,7 +35,7 @@ export type File = {
     alt_text: string;
     id: number;
     path: string;
-    post_id: number;
+    post_id: string | undefined;
     uploaded_at: string;
     user_id: number;
 }
