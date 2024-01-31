@@ -13,9 +13,17 @@ export type ProfileLoaderData = {
     userUploads: File[];
 }
 
+export type HomeLoaderData = {
+    comments: Comments[];
+    posts: Post[]
+    likes: Likes[];
+}
+
 export type Post = {
+    comments: Comments[] | undefined;
     created_at: string;
-    id: string | undefined;
+    file: File;
+    id: number;
     text: string;
     title: string;
     updated_at: string;
@@ -37,5 +45,13 @@ export type File = {
     path: string;
     post_id: string | undefined;
     uploaded_at: string;
+    user_id: number;
+}
+
+export type Likes = {
+    created_at: string;
+    id: number;
+    post_id: number;
+    updated_at: string;
     user_id: number;
 }

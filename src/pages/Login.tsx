@@ -5,6 +5,7 @@ import Button from "../components/Button";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthProvider";
 import http from "../utils/http";
+import { Oval } from "react-loader-spinner";
 
 type FormValues = {
   email: string;
@@ -71,8 +72,23 @@ const Login = () => {
 
       navigate(from);
     } catch (exception: any) {
-      console.log(exception);
-      // console.log(Object.entries(RootError));
+      // console.log(exception);
+      if (exception.response.status === 422) {
+        const errors = exception.response.data.errors;
+
+        for (let [fieldName, errorList] of Object.entries(errors)) {
+          console.log(fieldName, errorList);
+
+          type FieldName = "email" | "password";
+
+          const errors = (errorList as any[]).map((message) => ({ message }));
+          console.log(errors);
+
+          setError(fieldName as FieldName, errors[0]);
+        }
+
+        // console.log(Object.entries(errors));
+      }
 
       if (exception.response.status === 401) {
         const RootErrors = exception.response.data.errors;
@@ -146,13 +162,24 @@ const Login = () => {
             <p className="text-red-600 ">{errors.root?.message}</p>
           </div>
 
-          <Button
-            styles=""
-            disabled={isSubmitting}
-            value="Login"
-            type="submit"
-            onClick={() => null}
-          />
+          <div className="flex justify-center gap-2">
+            <Button
+              styles=""
+              disabled={isSubmitting}
+              value="Login"
+              type="submit"
+              onClick={() => null}
+            />
+
+            {isSubmitting ? (
+              <Oval
+                height={"32"}
+                width={"32"}
+                color="#6464C8"
+                strokeWidth={"4"}
+              />
+            ) : null}
+          </div>
 
           <div className="flex flex-col items-center justify-center m-4">
             <div className="w-full h-[1px] border border-gray-400 "></div>

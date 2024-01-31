@@ -22,25 +22,25 @@ const Nav = () => {
       {openMenu ? (
         <nav className="fixed z-50 flex flex-col-reverse items-center justify-between w-screen gap-5 px-12 py-6 bg-blue-500 sm:flex-row sm:justify-end sm:py-4">
           <ul className="flex flex-col items-center gap-6 text-white sm:flex-row">
-            <li className="text-lg font-medium">
+            <li className="text-lg font-medium hover:underline">
               <NavLink to="/">Home</NavLink>
             </li>
 
             {!auth.id ? (
               <ul className="flex flex-col items-center gap-6 text-white sm:flex-row">
-                <li className="text-lg font-medium">
+                <li className="text-lg font-medium hover:underline">
                   <NavLink to="/login">Login</NavLink>
                 </li>
-                <li className="text-lg font-medium">
+                <li className="text-lg font-medium hover:underline">
                   <NavLink to="/register">Register</NavLink>
                 </li>
               </ul>
             ) : (
               <ul className="flex flex-col items-center gap-6 text-white sm:flex-row">
-                <li className="text-lg font-medium">
+                <li className="text-lg font-medium hover:underline">
                   <NavLink to="/create-post">Create Post</NavLink>
                 </li>
-                <li className="text-lg font-medium">
+                <li className="text-lg font-medium hover:underline">
                   <NavLink to="/profile">Profile</NavLink>
                 </li>
 
