@@ -14,9 +14,20 @@ export type ProfileLoaderData = {
 }
 
 export type HomeLoaderData = {
-    comments: Comments[];
-    posts: Post[]
-    likes: Likes[];
+    // comments: Comments[];
+    // posts: Post[]
+    // likes: Likes[];
+    postsResponse: PostsResponse,
+    likesResponse: LikesResponse
+}
+
+export type PostsResponse = {
+    posts: Post[];
+    comments: Comment[];
+}
+
+export type LikesResponse = {
+    likes: Likes[]
 }
 
 export type Post = {
@@ -54,4 +65,13 @@ export type Likes = {
     post_id: number;
     updated_at: string;
     user_id: number;
+}
+
+//============Form Types==============//
+export type CommentFormValues = {
+    text: string;
+};
+
+export type CommentForms = {
+    form: CommentFormValues;
 }

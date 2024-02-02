@@ -1,8 +1,15 @@
 import { useEffect, useState } from "react";
-import { HomeLoaderData, Post } from "../types/loaderTypes";
+import { useForm } from "react-hook-form";
+import { useLoaderData } from "react-router-dom";
+import {
+  HomeLoaderData,
+  Likes,
+  Post,
+  CommentFormValues,
+} from "../types/loaderTypes";
 import { commentsOpenStyles, defaultStyles } from "./Profile";
 import Button from "../components/Button";
-import { useForm } from "react-hook-form";
+import http from "../utils/http";
 
 //Image and Icons
 import profile from "../assets/imgs/149071.png";
@@ -10,65 +17,57 @@ import commentIcon from "../assets/icons/comment-regular.svg";
 import likeIcon from "../assets/icons/thumbs-up-regular.svg";
 import likeIconFilled from "../assets/icons/thumbs-up-solid.svg";
 import xMark from "../assets/icons/xmark-solid.svg";
-import http from "../utils/http";
-import { useLoaderData } from "react-router-dom";
-
-type FormValues = {
-  text: string;
-};
+import { DevTool } from "@hookform/devtools";
 
 const Home = () => {
   const data = useLoaderData() as HomeLoaderData;
 
-  const [posts, setPosts] = useState(data.posts);
+  const { postsResponse, likesResponse } = data;
+
+  const [posts] = useState(postsResponse.posts);
+  const [comments] = useState(postsResponse.comments);
   const [styles, setStyles] = useState(defaultStyles);
-  const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState<number[]>([]);
-  // const [liked, setLiked] = useState<any>([]);
 
   useEffect(() => {
-    const likeIds = data.likes?.map((like) => like.post_id);
-    // console.log(likeIds);
-
+    const likeIds = likesResponse.likes?.map((like) => like.post_id);
     setLikes(likeIds);
-  }, [posts]);
+
+    return () => {};
+  }, []);
 
   //Handling functions
   const handleEditProfileClick = () => null;
 
-  const handleViewAllCommentsClick = (
-    e: React.MouseEvent<HTMLParagraphElement, MouseEvent>
-  ) => {
-    setStyles(commentsOpenStyles);
-
-    console.log(e);
-  };
-
-  const handleCloseCommentsClick = () => {
-    setStyles(defaultStyles);
-  };
-
   const handleLikeClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    posts.map(async (post) => {
-      if (post.id != e.target.id) return;
+    posts.map(async (post: Post) => {
+      if (post.id != (e.currentTarget.id as any)) return;
 
-      // TODO:
-      //CHANGE THE IF STATEMENT TO INCLUDE LIKE IN THE CODE UNDER
-      //WHEN DISLIKE-> SET THE STATE BY DELETING THE VALUE SAVED BEFORE WHEN LIKED
-
-      if (!liked) {
+      if (!likes.includes(post.id)) {
         try {
           await http.get("/sanctum/csrf-cookie");
-          await http.post(`api/post/${post.id}/like`);
-          setLiked(!liked);
+          await http.post(`api/like/${post.id}`);
+          const allLikes = await http.get("api/like/getUserLikes");
+
+          const likeIds = allLikes.data.likes?.map(
+            (like: Likes) => like.post_id
+          );
+          setLikes(likeIds);
+          console.log(likes);
         } catch (exception) {
           console.log(exception);
         }
       } else {
         try {
           await http.get("/sanctum/csrf-cookie");
-          await http.post(`api/post/${post.id}/dislike`);
-          setLiked(!liked);
+          await http.post(`api/dislike/${post.id}`);
+          const allLikes = await http.get("api/like/getUserLikes");
+
+          const likeIds = allLikes.data.likes?.map(
+            (like: Likes) => like.post_id
+          );
+          setLikes(likeIds);
+          console.log(likes);
         } catch (exception) {
           console.log(exception);
         }
@@ -76,27 +75,50 @@ const Home = () => {
     });
   };
 
+  const handleViewAllCommentsClick = (
+    e: React.MouseEvent<HTMLParagraphElement, MouseEvent>
+  ) => {
+    setStyles(commentsOpenStyles);
+  };
+
+  const handleCloseCommentsClick = () => {
+    setStyles(defaultStyles);
+  };
+
   //======Write a new comment form===========//
-  const form = useForm<FormValues>();
+  const form = useForm<CommentFormValues>();
+  // console.log(form);
+
   const {
     register,
+    control,
     handleSubmit,
     formState: { isSubmitting },
   } = form;
 
-  const onSubmit = (data: FormValues) => {
-    // posts.map(async (post: any) => {
-    //   try {
-    //     await http.get("/sanctum/csrf-cookie");
-    //     const response = await http.post(
-    //       `/api/comment/insert/${post.id}`,
-    //       data
-    //     );
-    //     console.log(response);
-    //   } catch (exception: any) {
-    //     console.log(exception);
-    //   }
-    // });
+  const onSubmit = (data: CommentFormValues) => {
+    console.log(data);
+    return;
+
+    // The Problem:
+    /* 
+      When I loop through the posts, I render one Form for each post. Each form has an input field with name "text" that contains the comment that
+      the user will write. But when there is more than one post, then only the last ones Form will count as a data provider for the onSubmit
+      function. In reality, it should be that the clicked Form of one random Post must count as a data provider for the onSubmit function.
+    */
+
+    posts.map(async (post: any) => {
+      try {
+        await http.get("/sanctum/csrf-cookie");
+        const response = await http.post(
+          `/api/comment/insert/${post.id}`,
+          data
+        );
+        console.log(response);
+      } catch (exception: any) {
+        console.log(exception);
+      }
+    });
   };
 
   const onError = () => {};
@@ -142,23 +164,16 @@ const Home = () => {
                   onClick={(e) => {
                     handleLikeClick(e);
                   }}
+                  id={`${post.id}`}
                   className="flex items-center gap-1 cursor-pointer"
                 >
-                  {likes.includes(post.id) ? (
-                    <img
-                      id={`${post.id}`}
-                      src={likeIconFilled}
-                      alt="like-icon"
-                      className="w-5 h-5"
-                    />
-                  ) : (
-                    <img
-                      id={`${post.id}`}
-                      src={likeIcon}
-                      alt="like-icon"
-                      className="w-5 h-5"
-                    />
-                  )}
+                  <img
+                    id={`${post.id}`}
+                    src={likes.includes(post.id) ? likeIconFilled : likeIcon}
+                    alt="like-icon"
+                    className="w-5 h-5"
+                  />
+
                   <p>Like</p>
                 </div>
 
@@ -179,7 +194,7 @@ const Home = () => {
               {/* All comments wrapper */}
               <div id="comments-wrapper" className={styles.commentsWrapper}>
                 <p
-                  id={post.id}
+                  id={`${post.id}`}
                   onClick={(e) => handleViewAllCommentsClick(e)}
                   className={styles.viewAllCommentsLink}
                 >
@@ -224,6 +239,7 @@ const Home = () => {
               {/* Write New Comment Wrapper */}
               <div id="write-new-comment" className={styles.writeNewComment}>
                 <form
+                  id={`${post.id}`}
                   onSubmit={handleSubmit(onSubmit, onError)}
                   noValidate
                   className="w-[90%] flex flex-col justify-start gap-2 "
@@ -246,6 +262,7 @@ const Home = () => {
                 </form>
               </div>
             </div>
+            <DevTool control={control} />
           </section>
         );
       })}
@@ -260,10 +277,13 @@ export default Home;
 // *IMPORTANT* : The loader must always return something.
 export const homeLoader = async () => {
   try {
-    const response = await http.get("/api/post/getAll");
+    const postsResponse = await http.get("/api/post/getAll");
+    const likesResponse = await http.get("/api/like/getUserLikes");
 
-    // console.log(response);
-    return response.data;
+    return {
+      postsResponse: postsResponse.data,
+      likesResponse: likesResponse.data,
+    };
   } catch (exception: any) {
     console.log(exception);
   }
