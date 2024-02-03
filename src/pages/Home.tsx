@@ -1,13 +1,6 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLoaderData } from "react-router-dom";
-import {
-  HomeLoaderData,
-  Likes,
-  Post,
-  CommentFormValues,
-} from "../types/loaderTypes";
-import { commentsOpenStyles, defaultStyles } from "./Profile";
 import Button from "../components/Button";
 import http from "../utils/http";
 
@@ -19,6 +12,18 @@ import likeIconFilled from "../assets/icons/thumbs-up-solid.svg";
 import xMark from "../assets/icons/xmark-solid.svg";
 import { DevTool } from "@hookform/devtools";
 
+//Types
+import {
+  HomeLoaderData,
+  Likes,
+  Post,
+  CommentFormValues,
+} from "../types/loaderTypes";
+import {
+  commentsOpenStyles,
+  defaultCommentSectionStyles,
+} from "../styles/CommentSectionStyles";
+
 const Home = () => {
   const data = useLoaderData() as HomeLoaderData;
 
@@ -26,7 +31,7 @@ const Home = () => {
 
   const [posts] = useState(postsResponse.posts);
   const [comments] = useState(postsResponse.comments);
-  const [styles, setStyles] = useState(defaultStyles);
+  const [styles, setStyles] = useState(defaultCommentSectionStyles);
   const [likes, setLikes] = useState<number[]>([]);
 
   useEffect(() => {
@@ -82,7 +87,7 @@ const Home = () => {
   };
 
   const handleCloseCommentsClick = () => {
-    setStyles(defaultStyles);
+    setStyles(defaultCommentSectionStyles);
   };
 
   //======Write a new comment form===========//

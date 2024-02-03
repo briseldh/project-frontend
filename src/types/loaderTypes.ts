@@ -1,16 +1,18 @@
 export type ProfileLoaderData = {
-    message: string;
-    userData: {
-        comments: Comments[];
-        created_at: string;
-        email: string;
-        id: number;
-        name: string;
-        posts: Post[];
-        role: string;
-        updated_at: string;
-    }
-    userUploads: File[];
+    // message: string;
+    // userData: {
+    //     comments: Comments[];
+    //     created_at: string;
+    //     email: string;
+    //     id: number;
+    //     name: string;
+    //     posts: Post[];
+    //     role: string;
+    //     updated_at: string;
+    // }
+    // userUploads: File[];
+    userDataResponse: UserDataResponse;
+    likesResponse: LikesResponse;
 }
 
 export type HomeLoaderData = {
@@ -21,6 +23,12 @@ export type HomeLoaderData = {
     likesResponse: LikesResponse
 }
 
+export type UserDataResponse = {
+    message: string;
+    userData: UserData;
+    userUploads: File[];
+}
+
 export type PostsResponse = {
     posts: Post[];
     comments: Comment[];
@@ -29,6 +37,17 @@ export type PostsResponse = {
 export type LikesResponse = {
     likes: Likes[]
 }
+
+export type UserData = {
+    comments: Comments[];
+    created_at: string;
+    email: string;
+    id: number;
+    name: string;
+    posts: Post[];
+    role: string;
+    updated_at: string;
+} 
 
 export type Post = {
     comments: Comments[] | undefined;
@@ -72,6 +91,3 @@ export type CommentFormValues = {
     text: string;
 };
 
-export type CommentForms = {
-    form: CommentFormValues;
-}

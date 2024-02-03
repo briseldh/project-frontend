@@ -42,9 +42,6 @@ const Login = () => {
 
   // This function is called when the fields are correctly validated
   const onSubmit = async (data: FormValues) => {
-    console.log(data);
-    return;
-
     //Logic for login
     try {
       await http.get("/sanctum/csrf-cookie");

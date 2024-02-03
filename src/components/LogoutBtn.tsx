@@ -20,12 +20,6 @@ const LogoutBtn = () => {
   };
 
   return (
-    // <button
-    //   className="p-1 text-white rounded bg-slate-500 drop-shadow-md"
-    //   onClick={handleClick}
-    // >
-    //   Log Out
-    // </button>
     <Button
       value="Log Out"
       type={undefined}

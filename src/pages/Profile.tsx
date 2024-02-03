@@ -1,7 +1,7 @@
-import { useContext, useState } from "react";
-import { AuthContext } from "../context/AuthProvider";
+import { useEffect, useState } from "react";
 import http from "../utils/http";
 import { useLoaderData } from "react-router-dom";
+import { useForm } from "react-hook-form";
 import Button from "../components/Button";
 
 //Image and Icons
@@ -9,62 +9,90 @@ import profile from "../assets/imgs/149071.png";
 import commentIcon from "../assets/icons/comment-regular.svg";
 import likeIcon from "../assets/icons/thumbs-up-regular.svg";
 import xMark from "../assets/icons/xmark-solid.svg";
+import likeIconFilled from "../assets/icons/thumbs-up-solid.svg";
 
 //Types
-import { ProfileLoaderData } from "../types/loaderTypes";
-import { useForm } from "react-hook-form";
-
-type FormValues = {
-  text: string;
-};
-
-export type Styles = {
-  closeCommentsXmark: string | undefined;
-  postWrapper: string | undefined;
-  postSection: string | undefined;
-  viewAllCommentsLink: string | undefined;
-  commentsWrapper: string | undefined;
-  writeNewComment: string | undefined;
-};
-
-export const defaultStyles: Styles = {
-  postSection:
-    "flex flex-col gap-5 px-4 pt-4 bg-gray-400 xs:w-full sm:pt-8 sm:h-auto md:flex md:items-center pb-4 sm:pb-8",
-  closeCommentsXmark: "hidden",
-  postWrapper: "overflow-hidden bg-gray-300 rounded-lg md:w-[70%] lg:w-[710px]",
-  viewAllCommentsLink:
-    "px-4 pt-2 font-medium text-gray-800 cursor-pointer hover:underline inline-block",
-  commentsWrapper: "overflow-hidden h-[220px] bg-gray-300",
-  writeNewComment: "hidden",
-};
-
-export const commentsOpenStyles: Styles = {
-  postSection:
-    "z-10 flex flex-col px-4 pt-4 bg-gray-400 top-20 xs:w-full sm:pt-8 sm:h-auto md:flex md:items-center pb-4",
-  closeCommentsXmark:
-    "flex justify-end w-full p-3 bg-gray-300 border-b border-gray-100 rounded-t-lg md:w-[730px]",
-  postWrapper:
-    "h-full bg-gray-300 xs:w-full sm:h-[600px] sm:overflow-auto sm:rounded-b-lg md:w-[730px]",
-  viewAllCommentsLink: "hidden",
-  commentsWrapper: "h-auto pb-32 bg-gray-300 sm:pb-0",
-  writeNewComment: "sticky bottom-0 left-0 w-full p-3 bg-gray-300 sm:sticky",
-};
+import {
+  CommentFormValues,
+  Likes,
+  Post,
+  ProfileLoaderData,
+} from "../types/loaderTypes";
+import {
+  commentsOpenStyles,
+  defaultCommentSectionStyles,
+} from "../styles/CommentSectionStyles";
+import {
+  closeEditProfileXmark,
+  editProfileSection,
+} from "../styles/EditProfileSectionStyles";
 
 const Profile = () => {
   const data = useLoaderData() as ProfileLoaderData;
+  const { userDataResponse, likesResponse } = data;
 
-  const [posts, setPosts] = useState(data.userData.posts);
-  const [comments] = useState(data.userData.comments);
-  const [uploads, setUploads] = useState(data.userUploads);
-  const [styles, setStyles] = useState(defaultStyles);
+  const [posts, setPosts] = useState(userDataResponse.userData.posts);
+  const [comments] = useState(userDataResponse.userData.comments);
+  const [uploads, setUploads] = useState(userDataResponse.userUploads);
+  const [likes, setLikes] = useState<number[]>([]);
+  const [styles, setStyles] = useState(defaultCommentSectionStyles);
+  const [editProfileStyles, setEditProfileStyles] = useState(
+    closeEditProfileXmark
+  );
 
-  // console.log(uploads);
+  useEffect(() => {
+    const likeIds = likesResponse.likes?.map((like) => like.post_id);
+    setLikes(likeIds);
 
-  const { auth } = useContext(AuthContext);
-  // console.log(auth);
+    return () => {};
+  }, []);
 
   //Handling functions
-  const handleEditProfileClick = () => null;
+  const handleEditProfileClick = async () => {
+    setEditProfileStyles(editProfileSection);
+  };
+
+  const handleAddProfilePicClick = () => null;
+
+  const handleCloseEditProfileClick = () => {
+    setEditProfileStyles(closeEditProfileXmark);
+  };
+
+  const handleLikeClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    posts.map(async (post: Post) => {
+      if (post.id != (e.currentTarget.id as any)) return;
+
+      if (!likes.includes(post.id)) {
+        try {
+          await http.get("/sanctum/csrf-cookie");
+          await http.post(`api/like/${post.id}`);
+          const allLikes = await http.get("api/like/getUserLikes");
+
+          const likeIds = allLikes.data.likes?.map(
+            (like: Likes) => like.post_id
+          );
+          setLikes(likeIds);
+          console.log(likes);
+        } catch (exception) {
+          console.log(exception);
+        }
+      } else {
+        try {
+          await http.get("/sanctum/csrf-cookie");
+          await http.post(`api/dislike/${post.id}`);
+          const allLikes = await http.get("api/like/getUserLikes");
+
+          const likeIds = allLikes.data.likes?.map(
+            (like: Likes) => like.post_id
+          );
+          setLikes(likeIds);
+          console.log(likes);
+        } catch (exception) {
+          console.log(exception);
+        }
+      }
+    });
+  };
 
   const handleViewAllCommentsClick = (
     e: React.MouseEvent<HTMLParagraphElement, MouseEvent>
@@ -75,18 +103,18 @@ const Profile = () => {
   };
 
   const handleCloseCommentsClick = () => {
-    setStyles(defaultStyles);
+    setStyles(defaultCommentSectionStyles);
   };
 
   //======Write a new comment form===========//
-  const form = useForm<FormValues>();
+  const form = useForm<CommentFormValues>();
   const {
     register,
     handleSubmit,
     formState: { isSubmitting },
   } = form;
 
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = (data: CommentFormValues) => {
     // posts.map(async (post: any) => {
     //   try {
     //     await http.get("/sanctum/csrf-cookie");
@@ -117,7 +145,7 @@ const Profile = () => {
 
           <div className="flex flex-col items-center w-1/2 gap-2 pt-2 md:h-full md:w-4/5 md:pt-40 md:flex-row md:justify-between md:pl-5 ">
             <h1 className="z-10 text-2xl font-semibold md:text-3xl md:font-bold">
-              {data.userData.name}
+              {userDataResponse.userData.name}
             </h1>
 
             <Button
@@ -128,6 +156,34 @@ const Profile = () => {
               styles="self-center w-[75%] xs:[50%] sm:w-[40%] p-1 text-white bg-slate-500 rounded drop-shadow-md lg:font-bold lg:w-[30%]"
             />
           </div>
+          <section id="edit-profile-section" className={editProfileStyles}>
+            <div className="flex items-center justify-between w-full px-6 py-4 border-gray-300 border-y">
+              <h3 className="text-xl font-bold text-gray-300 ">Edit Profile</h3>
+              <img
+                onClick={handleCloseEditProfileClick}
+                src={xMark}
+                alt="x-mark"
+                className="w-6 h-6 cursor-pointer"
+              />
+            </div>
+
+            <div>
+              <div className="flex flex-col items-center w-full px-6 py-4 gap-7">
+                <div className="flex items-center justify-between w-full">
+                  <h4 className="text-xl font-semibold text-gray-300">
+                    Profile Picture
+                  </h4>
+                  <p
+                    className="text-lg font-medium text-blue-400 cursor-pointer"
+                    onClick={handleAddProfilePicClick}
+                  >
+                    Add
+                  </p>
+                </div>
+                <img src={profile} alt="profile-pic" className="w-44 h-44" />
+              </div>
+            </div>
+          </section>
         </section>
       </section>
 
@@ -155,7 +211,7 @@ const Profile = () => {
               <p className="px-4 pb-2 text-gray-800">{post.text}</p>
 
               {uploads?.map((upload) => {
-                if (post.id !== upload.post_id) return;
+                if (post.id !== (upload.post_id as any)) return;
                 // console.log(upload);
 
                 return (
@@ -170,8 +226,20 @@ const Profile = () => {
               })}
 
               <div className="flex self-center justify-between py-1 border-gray-100 px-11 border-y xs:px-16 xs:py-2 sm:px-24">
-                <div className="flex items-center gap-1">
-                  <img src={likeIcon} alt="like-icon" className="w-5 h-5" />
+                <div
+                  onClick={(e) => {
+                    handleLikeClick(e);
+                  }}
+                  id={`${post.id}`}
+                  className="flex items-center gap-1 cursor-pointer"
+                >
+                  <img
+                    id={`${post.id}`}
+                    src={likes.includes(post.id) ? likeIconFilled : likeIcon}
+                    alt="like-icon"
+                    className="w-5 h-5"
+                  />
+
                   <p>Like</p>
                 </div>
 
@@ -191,7 +259,7 @@ const Profile = () => {
               {/* All comments wrapper */}
               <div id="comments-wrapper" className={styles.commentsWrapper}>
                 <p
-                  id={post.id}
+                  id={`${post.id}`}
                   onClick={(e) => handleViewAllCommentsClick(e)}
                   className={styles.viewAllCommentsLink}
                 >
@@ -269,10 +337,14 @@ export default Profile;
 
 export const profileLoader = async () => {
   try {
-    const response = await http.get("/api/getUserData");
+    const userDataResponse = await http.get("/api/getUserData");
+    const likesResponse = await http.get("/api/like/getUserLikes");
 
-    // console.log(response);
-    return response.data;
+    console.log(userDataResponse);
+    return {
+      userDataResponse: userDataResponse.data,
+      likesResponse: likesResponse.data,
+    };
   } catch (exception: any) {
     console.log(exception);
   }
