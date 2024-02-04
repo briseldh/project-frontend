@@ -21,7 +21,7 @@ import {
 } from "../types/loaderTypes";
 import {
   commentsOpenStyles,
-  defaultCommentSectionStyles,
+  commentsCloseStyles,
 } from "../styles/CommentSectionStyles";
 
 const Home = () => {
@@ -31,7 +31,7 @@ const Home = () => {
 
   const [posts] = useState(postsResponse.posts);
   const [comments] = useState(postsResponse.comments);
-  const [styles, setStyles] = useState(defaultCommentSectionStyles);
+  const [styles, setStyles] = useState(commentsCloseStyles);
   const [likes, setLikes] = useState<number[]>([]);
 
   useEffect(() => {
@@ -87,7 +87,7 @@ const Home = () => {
   };
 
   const handleCloseCommentsClick = () => {
-    setStyles(defaultCommentSectionStyles);
+    setStyles(commentsCloseStyles);
   };
 
   //======Write a new comment form===========//

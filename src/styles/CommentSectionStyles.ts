@@ -7,7 +7,7 @@ export type Styles = {
   writeNewComment: string | undefined;
 };
 
-export const defaultCommentSectionStyles: Styles = {
+export const commentsCloseStyles: Styles = {
   postSection:
     "flex flex-col gap-5 px-4 pt-4 bg-gray-400 xs:w-full sm:pt-8 sm:h-auto md:flex md:items-center pb-4 sm:pb-8",
   closeCommentsXmark: "hidden",
