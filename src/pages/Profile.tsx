@@ -14,64 +14,27 @@ import threePointsMenu from "../assets/icons/ellipsis-solid.svg";
 import editIcon from "../assets/icons/pen-solid.svg";
 import deleteIcon from "../assets/icons/trash-solid.svg";
 
-//Types
-import {
-  CommentFormValues,
-  Likes,
-  Post,
-  ProfileLoaderData,
-} from "../types/loaderTypes";
-import {
-  Styles,
-  commentsOpenStyles,
-  commentsCloseStyles,
-} from "../styles/CommentSectionStyles";
+//Types and styles
+import { CommentFormValues, ProfileLoaderData } from "../types/loaderTypes";
 import {
   editProfileOpen,
   editProfileClose,
   threePointsMenuClose,
   threePointsMenuOpen,
 } from "../styles/profilePage";
-
-type AllStyles = {
-  // defaultCommentSectionStyles: Styles;
-  // commentsOpenStyles: Styles;
-  // editProfileSection: string | undefined;
-  // closeEditProfileXmark: string | undefined;
-  // threePointsMenuOpen: string | undefined;
-  // threePointsMenuClose: string | undefined;
-  postSection: Styles;
-  profileSection: string | undefined;
-  threePointsMenu: {
-    styles: string | undefined;
-    open: boolean;
-  };
-};
+import { allStyles } from "../styles/allStyles";
 
 const Profile = () => {
   const data = useLoaderData() as ProfileLoaderData;
   const { userDataResponse, likesResponse } = data;
-
-  const allStyles: AllStyles = {
-    // defaultCommentSectionStyles: defaultCommentSectionStyles,
-    // commentsOpenStyles: commentsOpenStyles,
-    // editProfileSection: editProfileSection,
-    // closeEditProfileXmark: closeEditProfileXmark,
-    // threePointsMenuOpen: threePointsMenuOpen,
-    // threePointsMenuClose: threePointsMenuClose,
-    postSection: commentsCloseStyles,
-    profileSection: editProfileClose,
-    threePointsMenu: {
-      styles: threePointsMenuClose,
-      open: false,
-    },
-  };
 
   const [posts, setPosts] = useState(userDataResponse.userData.posts);
   const [comments] = useState(userDataResponse.userData.comments);
   const [uploads, setUploads] = useState(userDataResponse.userUploads);
   const [likes, setLikes] = useState<number[]>([]);
   const [styles, setStyles] = useState(allStyles);
+  const [commentsOpen, setCommentsOpen] = useState<number[]>([]);
+  const [pointsMenuOpen, setPointsMenuOpen] = useState<number[]>([]);
 
   useEffect(() => {
     const likeIds = likesResponse.likes?.map((like) => like.post_id);
@@ -99,98 +62,94 @@ const Profile = () => {
   };
   const handleAddProfilePicClick = () => null;
 
-  const handlePointsMenuClick = () => {
-    if (!styles.threePointsMenu.open) {
-      setStyles((prevStyles) => {
-        return {
-          ...prevStyles,
-          threePointsMenu: {
-            styles: threePointsMenuOpen,
-            open: true,
-          },
-        };
+  const handlePointsMenuClick = (
+    e: React.MouseEvent<HTMLImageElement, MouseEvent>
+  ) => {
+    const postId = Number(e.currentTarget.id);
+
+    if (!pointsMenuOpen.includes(postId)) {
+      setPointsMenuOpen((prevValue) => {
+        return [...prevValue, postId];
       });
     } else {
-      setStyles((prevStyles) => {
-        return {
-          ...prevStyles,
-          threePointsMenu: {
-            styles: threePointsMenuClose,
-            open: false,
-          },
-        };
+      setPointsMenuOpen((prevValue) => {
+        const likeIdx = prevValue.indexOf(postId);
+        prevValue.splice(likeIdx, 1);
+        return [...prevValue];
       });
     }
+    console.log(pointsMenuOpen);
   };
-  const handleDeletePostClick = (
+  const handleDeletePostClick = async (
     e: React.MouseEvent<HTMLHeadingElement, MouseEvent>
   ) => {
-    posts.map(async (post) => {
-      if (post.id != (e.currentTarget.id as any)) return;
-      try {
-        await http.get("/sanctum/csrf-cookie");
-        await http.delete(`/api/post/delete/${post.id}`);
+    const postId = Number(e.currentTarget.id);
 
-        //ToDo: Redirect after deleting post
-        // <Navigate to={"/profile"} />;
+    try {
+      await http.get("/sanctum/csrf-cookie");
+      await http.delete(`/api/post/delete/${postId}`);
+
+      //ToDo: Redirect after deleting post
+      // <Navigate to={"/profile"} />;
+    } catch (exception) {
+      console.log(exception);
+    }
+  };
+
+  const handleLikeClick = async (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    const postId = Number(e.currentTarget.id);
+
+    if (!likes.includes(postId)) {
+      try {
+        setLikes((prevLikes) => {
+          return [...prevLikes, postId];
+        });
+
+        await http.get("/sanctum/csrf-cookie");
+        await http.post(`api/like/${postId}`);
       } catch (exception) {
         console.log(exception);
       }
-    });
-  };
+    } else {
+      try {
+        setLikes((prevLikes) => {
+          const likeIdx = prevLikes.indexOf(postId);
+          prevLikes.splice(likeIdx, 1);
+          return [...prevLikes];
+        });
 
-  const handleLikeClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    posts.map(async (post: Post) => {
-      if (post.id != (e.currentTarget.id as any)) return;
-
-      if (!likes.includes(post.id)) {
-        try {
-          await http.get("/sanctum/csrf-cookie");
-          await http.post(`api/like/${post.id}`);
-          const allLikes = await http.get("api/like/getUserLikes");
-
-          const likeIds = allLikes.data.likes?.map(
-            (like: Likes) => like.post_id
-          );
-          setLikes(likeIds);
-          console.log(likes);
-        } catch (exception) {
-          console.log(exception);
-        }
-      } else {
-        try {
-          await http.get("/sanctum/csrf-cookie");
-          await http.post(`api/dislike/${post.id}`);
-          const allLikes = await http.get("api/like/getUserLikes");
-
-          const likeIds = allLikes.data.likes?.map(
-            (like: Likes) => like.post_id
-          );
-          setLikes(likeIds);
-          console.log(likes);
-        } catch (exception) {
-          console.log(exception);
-        }
+        await http.get("/sanctum/csrf-cookie");
+        await http.post(`api/dislike/${postId}`);
+      } catch (exception) {
+        console.log(exception);
       }
-    });
+    }
   };
 
   const handleViewAllCommentsClick = (
     e: React.MouseEvent<HTMLParagraphElement, MouseEvent>
   ) => {
-    setStyles((prevStyles) => {
-      return {
-        ...prevStyles,
-        postSection: commentsOpenStyles,
-      };
+    const postId = Number(e.currentTarget.id);
+
+    setCommentsOpen((prevValue) => {
+      if (prevValue.includes(postId)) {
+        return [...prevValue];
+      } else {
+        return [...prevValue, postId];
+      }
     });
   };
-  const handleCloseCommentsClick = () => {
-    setStyles((prevStyles) => {
-      return {
-        ...prevStyles,
-        postSection: commentsCloseStyles,
-      };
+  const handleCloseCommentsClick = (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    const postId = Number(e.currentTarget.id);
+
+    setCommentsOpen((prevValue) => {
+      const likeIdx = prevValue.indexOf(postId);
+      prevValue.splice(likeIdx, 1);
+      return [...prevValue];
     });
   };
 
@@ -203,6 +162,8 @@ const Profile = () => {
   } = form;
 
   const onSubmit = (data: CommentFormValues) => {
+    console.log(data);
+
     // posts.map(async (post: any) => {
     //   try {
     //     await http.get("/sanctum/csrf-cookie");
@@ -280,12 +241,20 @@ const Profile = () => {
           <section
             id="post-section"
             key={post.id}
-            className={styles.postSection.postSection}
+            className={
+              commentsOpen.includes(post.id)
+                ? styles.postSection.commentsOpenStyles.postSection
+                : styles.postSection.commentsCloseStyles.postSection
+            }
           >
             <div
               id="close-comments-xmark"
-              onClick={handleCloseCommentsClick}
-              className={styles.postSection.closeCommentsXmark}
+              onClick={(e) => handleCloseCommentsClick(e)}
+              className={
+                commentsOpen.includes(post.id)
+                  ? styles.postSection.commentsOpenStyles.closeCommentsXmark
+                  : styles.postSection.commentsCloseStyles.closeCommentsXmark
+              }
             >
               <img
                 src={xMark}
@@ -294,7 +263,14 @@ const Profile = () => {
               />
             </div>
 
-            <div id="post-wrapper" className={styles.postSection.postWrapper}>
+            <div
+              id="post-wrapper"
+              className={
+                commentsOpen.includes(post.id)
+                  ? styles.postSection.commentsOpenStyles.postWrapper
+                  : styles.postSection.commentsCloseStyles.postWrapper
+              }
+            >
               <div className="relative flex items-center justify-between">
                 <div>
                   <h1 className="px-4 pt-2 text-lg font-semibold">
@@ -304,13 +280,20 @@ const Profile = () => {
                 </div>
 
                 <img
-                  onClick={handlePointsMenuClick}
+                  id={`${post.id}`}
+                  onClick={(e) => handlePointsMenuClick(e)}
                   src={threePointsMenu}
                   alt="three-point-menu"
                   className="w-5 h-5 mx-4 cursor-pointer"
                 />
 
-                <div className={styles.threePointsMenu.styles}>
+                <div
+                  className={
+                    pointsMenuOpen.includes(post.id)
+                      ? threePointsMenuOpen
+                      : threePointsMenuClose
+                  }
+                >
                   <div className="flex items-center gap-2 text-gray-200 cursor-pointer hover:underline">
                     <img src={editIcon} alt="pen-icon" className="w-4 h-4" />
                     <h4>Edit Post</h4>
@@ -368,7 +351,8 @@ const Profile = () => {
                 </div>
 
                 <div
-                  onClick={handleViewAllCommentsClick}
+                  id={`${post.id}`}
+                  onClick={(e) => handleViewAllCommentsClick(e)}
                   className="flex items-center gap-1 cursor-pointer"
                 >
                   <img
@@ -383,12 +367,22 @@ const Profile = () => {
               {/* All comments wrapper */}
               <div
                 id="comments-wrapper"
-                className={styles.postSection.commentsWrapper}
+                className={
+                  commentsOpen.includes(post.id)
+                    ? styles.postSection.commentsOpenStyles.commentsWrapper
+                    : styles.postSection.commentsCloseStyles.commentsWrapper
+                }
               >
                 <p
                   id={`${post.id}`}
                   onClick={(e) => handleViewAllCommentsClick(e)}
-                  className={styles.postSection.viewAllCommentsLink}
+                  className={
+                    commentsOpen.includes(post.id)
+                      ? styles.postSection.commentsOpenStyles
+                          .viewAllCommentsLink
+                      : styles.postSection.commentsCloseStyles
+                          .viewAllCommentsLink
+                  }
                 >
                   View all comments
                 </p>
@@ -431,7 +425,11 @@ const Profile = () => {
               {/* Write New Comment Wrapper */}
               <div
                 id="write-new-comment"
-                className={styles.postSection.writeNewComment}
+                className={
+                  commentsOpen.includes(post.id)
+                    ? styles.postSection.commentsOpenStyles.writeNewComment
+                    : styles.postSection.commentsCloseStyles.writeNewComment
+                }
               >
                 <form
                   onSubmit={handleSubmit(onSubmit, onError)}

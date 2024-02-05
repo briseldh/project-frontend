@@ -12,17 +12,9 @@ import likeIconFilled from "../assets/icons/thumbs-up-solid.svg";
 import xMark from "../assets/icons/xmark-solid.svg";
 import { DevTool } from "@hookform/devtools";
 
-//Types
-import {
-  HomeLoaderData,
-  Likes,
-  Post,
-  CommentFormValues,
-} from "../types/loaderTypes";
-import {
-  commentsOpenStyles,
-  commentsCloseStyles,
-} from "../styles/CommentSectionStyles";
+//Types and styles
+import { HomeLoaderData, CommentFormValues } from "../types/loaderTypes";
+import { allStyles } from "../styles/allStyles";
 
 const Home = () => {
   const data = useLoaderData() as HomeLoaderData;
@@ -31,8 +23,9 @@ const Home = () => {
 
   const [posts] = useState(postsResponse.posts);
   const [comments] = useState(postsResponse.comments);
-  const [styles, setStyles] = useState(commentsCloseStyles);
+  const [styles, setStyles] = useState(allStyles);
   const [likes, setLikes] = useState<number[]>([]);
+  const [commentsOpen, setCommentsOpen] = useState<number[]>([]);
 
   useEffect(() => {
     const likeIds = likesResponse.likes?.map((like) => like.post_id);
@@ -44,50 +37,62 @@ const Home = () => {
   //Handling functions
   const handleEditProfileClick = () => null;
 
-  const handleLikeClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    posts.map(async (post: Post) => {
-      if (post.id != (e.currentTarget.id as any)) return;
+  const handleLikeClick = async (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    const postId = Number(e.currentTarget.id);
 
-      if (!likes.includes(post.id)) {
-        try {
-          await http.get("/sanctum/csrf-cookie");
-          await http.post(`api/like/${post.id}`);
-          const allLikes = await http.get("api/like/getUserLikes");
+    if (!likes.includes(postId)) {
+      try {
+        setLikes((prevLikes) => {
+          return [...prevLikes, postId];
+        });
 
-          const likeIds = allLikes.data.likes?.map(
-            (like: Likes) => like.post_id
-          );
-          setLikes(likeIds);
-          console.log(likes);
-        } catch (exception) {
-          console.log(exception);
-        }
-      } else {
-        try {
-          await http.get("/sanctum/csrf-cookie");
-          await http.post(`api/dislike/${post.id}`);
-          const allLikes = await http.get("api/like/getUserLikes");
-
-          const likeIds = allLikes.data.likes?.map(
-            (like: Likes) => like.post_id
-          );
-          setLikes(likeIds);
-          console.log(likes);
-        } catch (exception) {
-          console.log(exception);
-        }
+        await http.get("/sanctum/csrf-cookie");
+        await http.post(`api/like/${postId}`);
+      } catch (exception) {
+        console.log(exception);
       }
-    });
+    } else {
+      try {
+        setLikes((prevLikes) => {
+          const likeIdx = prevLikes.indexOf(postId);
+          prevLikes.splice(likeIdx, 1);
+          return [...prevLikes];
+        });
+
+        await http.get("/sanctum/csrf-cookie");
+        await http.post(`api/dislike/${postId}`);
+        console.log(likes);
+      } catch (exception) {
+        console.log(exception);
+      }
+    }
   };
 
   const handleViewAllCommentsClick = (
     e: React.MouseEvent<HTMLParagraphElement, MouseEvent>
   ) => {
-    setStyles(commentsOpenStyles);
-  };
+    const postId = Number(e.currentTarget.id);
 
-  const handleCloseCommentsClick = () => {
-    setStyles(commentsCloseStyles);
+    setCommentsOpen((prevValue) => {
+      if (prevValue.includes(postId)) {
+        return [...prevValue];
+      } else {
+        return [...prevValue, postId];
+      }
+    });
+  };
+  const handleCloseCommentsClick = (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    const postId = Number(e.currentTarget.id);
+
+    setCommentsOpen((prevValue) => {
+      const likeIdx = prevValue.indexOf(postId);
+      prevValue.splice(likeIdx, 1);
+      return [...prevValue];
+    });
   };
 
   //======Write a new comment form===========//
@@ -137,12 +142,20 @@ const Home = () => {
           <section
             id="post-section"
             key={post.id}
-            className={styles.postSection}
+            className={
+              commentsOpen.includes(post.id)
+                ? styles.postSection.commentsOpenStyles.postSection
+                : styles.postSection.commentsCloseStyles.postSection
+            }
           >
             <div
               id="close-comments-xmark"
-              onClick={handleCloseCommentsClick}
-              className={styles.closeCommentsXmark}
+              onClick={(e) => handleCloseCommentsClick(e)}
+              className={
+                commentsOpen.includes(post.id)
+                  ? styles.postSection.commentsOpenStyles.closeCommentsXmark
+                  : styles.postSection.commentsCloseStyles.closeCommentsXmark
+              }
             >
               <img
                 src={xMark}
@@ -151,7 +164,14 @@ const Home = () => {
               />
             </div>
 
-            <div id="post-wrapper" className={styles.postWrapper}>
+            <div
+              id="post-wrapper"
+              className={
+                commentsOpen.includes(post.id)
+                  ? styles.postSection.commentsOpenStyles.postWrapper
+                  : styles.postSection.commentsCloseStyles.postWrapper
+              }
+            >
               <h1 className="px-4 pt-2 text-lg font-semibold">{post.title}</h1>
               <p className="px-4 pb-2 text-gray-800">{post.text}</p>
 
@@ -184,6 +204,7 @@ const Home = () => {
 
                 {/* Comment Icon */}
                 <div
+                  id={`${post.id}`}
                   onClick={handleViewAllCommentsClick}
                   className="flex items-center gap-1 cursor-pointer"
                 >
@@ -197,11 +218,24 @@ const Home = () => {
               </div>
 
               {/* All comments wrapper */}
-              <div id="comments-wrapper" className={styles.commentsWrapper}>
+              <div
+                id="comments-wrapper"
+                className={
+                  commentsOpen.includes(post.id)
+                    ? styles.postSection.commentsOpenStyles.commentsWrapper
+                    : styles.postSection.commentsCloseStyles.commentsWrapper
+                }
+              >
                 <p
                   id={`${post.id}`}
                   onClick={(e) => handleViewAllCommentsClick(e)}
-                  className={styles.viewAllCommentsLink}
+                  className={
+                    commentsOpen.includes(post.id)
+                      ? styles.postSection.commentsOpenStyles
+                          .viewAllCommentsLink
+                      : styles.postSection.commentsCloseStyles
+                          .viewAllCommentsLink
+                  }
                 >
                   View all comments
                 </p>
@@ -242,7 +276,14 @@ const Home = () => {
               </div>
 
               {/* Write New Comment Wrapper */}
-              <div id="write-new-comment" className={styles.writeNewComment}>
+              <div
+                id="write-new-comment"
+                className={
+                  commentsOpen.includes(post.id)
+                    ? styles.postSection.commentsOpenStyles.writeNewComment
+                    : styles.postSection.commentsCloseStyles.writeNewComment
+                }
+              >
                 <form
                   id={`${post.id}`}
                   onSubmit={handleSubmit(onSubmit, onError)}
