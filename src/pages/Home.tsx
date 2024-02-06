@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLoaderData } from "react-router-dom";
 import Button from "../components/Button";
@@ -15,6 +15,7 @@ import { DevTool } from "@hookform/devtools";
 //Types and styles
 import { HomeLoaderData, CommentFormValues } from "../types/loaderTypes";
 import { allStyles } from "../styles/allStyles";
+import { AuthContext } from "../context/AuthProvider";
 
 const Home = () => {
   const data = useLoaderData() as HomeLoaderData;

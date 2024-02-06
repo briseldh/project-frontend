@@ -3,6 +3,9 @@ import http from "../utils/http";
 import { Navigate, useLoaderData } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import Button from "../components/Button";
+// import EditProfileDialog from "../components/material-ui/EditProfileDialog";
+import EditProfileDialog from "../components/headless-ui/EditProfileDialog";
+import EditPostDialog from "../components/headless-ui/EditPostDialog";
 
 //Image and Icons
 import profile from "../assets/imgs/149071.png";
@@ -60,7 +63,7 @@ const Profile = () => {
       };
     });
   };
-  const handleAddProfilePicClick = () => null;
+  // const handleAddProfilePicClick = () => null;
 
   const handlePointsMenuClick = (
     e: React.MouseEvent<HTMLImageElement, MouseEvent>
@@ -197,42 +200,8 @@ const Profile = () => {
               {userDataResponse.userData.name}
             </h1>
 
-            <Button
-              type={undefined}
-              value="Edit Profile"
-              disabled={undefined}
-              onClick={handleEditProfileClick}
-              styles="self-center w-[75%] xs:[50%] sm:w-[40%] p-1 text-white bg-slate-500 rounded drop-shadow-md lg:font-bold lg:w-[30%]"
-            />
+            <EditProfileDialog />
           </div>
-          <section id="edit-profile-section" className={styles.profileSection}>
-            <div className="flex items-center justify-between w-full px-6 py-4 border-gray-300 border-y">
-              <h3 className="text-xl font-bold text-gray-300 ">Edit Profile</h3>
-              <img
-                onClick={handleCloseEditProfileClick}
-                src={xMark}
-                alt="x-mark"
-                className="w-6 h-6 cursor-pointer"
-              />
-            </div>
-
-            <div>
-              <div className="flex flex-col items-center w-full px-6 py-4 gap-7">
-                <div className="flex items-center justify-between w-full">
-                  <h4 className="text-xl font-semibold text-gray-300">
-                    Profile Picture
-                  </h4>
-                  <p
-                    className="text-lg font-medium text-blue-400 cursor-pointer"
-                    onClick={handleAddProfilePicClick}
-                  >
-                    Add
-                  </p>
-                </div>
-                <img src={profile} alt="profile-pic" className="w-44 h-44" />
-              </div>
-            </div>
-          </section>
         </section>
       </section>
 
@@ -287,6 +256,7 @@ const Profile = () => {
                   className="w-5 h-5 mx-4 cursor-pointer"
                 />
 
+                {/* Delete and Edit Post */}
                 <div
                   className={
                     pointsMenuOpen.includes(post.id)
@@ -294,10 +264,12 @@ const Profile = () => {
                       : threePointsMenuClose
                   }
                 >
-                  <div className="flex items-center gap-2 text-gray-200 cursor-pointer hover:underline">
+                  {/* <div className="flex items-center gap-2 text-gray-200 cursor-pointer hover:underline">
                     <img src={editIcon} alt="pen-icon" className="w-4 h-4" />
                     <h4>Edit Post</h4>
-                  </div>
+                  </div> */}
+
+                  <EditPostDialog />
 
                   <div className="flex items-center gap-2 text-gray-200 cursor-pointer hover:underline">
                     <img

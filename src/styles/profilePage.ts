@@ -1,5 +1,5 @@
 //============== Edit Profile Section =============================//
-export const editProfileOpen: string | undefined = "absolute z-10 w-full h-full m-10 bg-gray-500"
+export const editProfileOpen: string | undefined = "fixed z-10 w-full h-full bg-gray-500"
 export const editProfileClose: string | undefined = "absolute z-10 w-full h-full m-10 bg-gray-500 -left-[200%]"
 //============== Edit Profile Section =============================//
 

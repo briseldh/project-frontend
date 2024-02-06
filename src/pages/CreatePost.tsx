@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
 import Button from "../components/Button";
 import http from "../utils/http";
+import NewCommenTry from "./NewCommenTry";
 
 type FormValues = {
   title: string;
@@ -109,6 +110,7 @@ const CreatePost = () => {
           />
         </form>
       </section>
+      {/* <NewCommenTry /> */}
       <DevTool control={control} />
     </>
   );
