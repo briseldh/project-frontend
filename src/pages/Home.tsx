@@ -1,7 +1,5 @@
-import { useContext, useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
 import { useLoaderData } from "react-router-dom";
-import Button from "../components/Button";
 import http from "../utils/http";
 
 //Image and Icons
@@ -9,13 +7,12 @@ import profile from "../assets/imgs/149071.png";
 import commentIcon from "../assets/icons/comment-regular.svg";
 import likeIcon from "../assets/icons/thumbs-up-regular.svg";
 import likeIconFilled from "../assets/icons/thumbs-up-solid.svg";
-import xMark from "../assets/icons/xmark-solid.svg";
-import { DevTool } from "@hookform/devtools";
+import xMarkBlack from "../assets/icons/xmark-solid-black.svg";
 
 //Types and styles
-import { HomeLoaderData, CommentFormValues } from "../types/loaderTypes";
+import { HomeLoaderData } from "../types/loaderTypes";
 import { allStyles } from "../styles/allStyles";
-import { AuthContext } from "../context/AuthProvider";
+import NewComment from "../components/forms/NewComment";
 
 const Home = () => {
   const data = useLoaderData() as HomeLoaderData;
@@ -24,7 +21,7 @@ const Home = () => {
 
   const [posts] = useState(postsResponse.posts);
   const [comments] = useState(postsResponse.comments);
-  const [styles, setStyles] = useState(allStyles);
+  const [styles] = useState(allStyles);
   const [likes, setLikes] = useState<number[]>([]);
   const [commentsOpen, setCommentsOpen] = useState<number[]>([]);
 
@@ -36,8 +33,6 @@ const Home = () => {
   }, []);
 
   //Handling functions
-  const handleEditProfileClick = () => null;
-
   const handleLikeClick = async (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>
   ) => {
@@ -96,44 +91,6 @@ const Home = () => {
     });
   };
 
-  //======Write a new comment form===========//
-  const form = useForm<CommentFormValues>();
-  // console.log(form);
-
-  const {
-    register,
-    control,
-    handleSubmit,
-    formState: { isSubmitting },
-  } = form;
-
-  const onSubmit = (data: CommentFormValues) => {
-    console.log(data);
-    return;
-
-    // The Problem:
-    /* 
-      When I loop through the posts, I render one Form for each post. Each form has an input field with name "text" that contains the comment that
-      the user will write. But when there is more than one post, then only the last ones Form will count as a data provider for the onSubmit
-      function. In reality, it should be that the clicked Form of one random Post must count as a data provider for the onSubmit function.
-    */
-
-    posts.map(async (post: any) => {
-      try {
-        await http.get("/sanctum/csrf-cookie");
-        const response = await http.post(
-          `/api/comment/insert/${post.id}`,
-          data
-        );
-        console.log(response);
-      } catch (exception: any) {
-        console.log(exception);
-      }
-    });
-  };
-
-  const onError = () => {};
-
   const baseUrl = "http://localhost:80";
 
   return (
@@ -159,7 +116,7 @@ const Home = () => {
               }
             >
               <img
-                src={xMark}
+                src={xMarkBlack}
                 alt="x-mark"
                 className="w-6 h-6 cursor-pointer"
               />
@@ -241,39 +198,23 @@ const Home = () => {
                   View all comments
                 </p>
 
-                <div className="flex gap-2 p-4">
-                  <img
-                    src={profile}
-                    alt="commenter-profile-pic"
-                    className="w-10 h-10"
-                  />
-                  <div className="p-2 bg-gray-200 rounded-xl">
-                    <h3 className="font-medium">John Doe</h3>
-                    <p className="text-gray-800">This is a comment</p>
-                  </div>
-                </div>
-                <div className="flex gap-2 p-4">
-                  <img
-                    src={profile}
-                    alt="commenter-profile-pic"
-                    className="w-10 h-10"
-                  />
-                  <div className="p-2 bg-gray-200 rounded-xl">
-                    <h3 className="font-medium">John Doe</h3>
-                    <p className="text-gray-800">This is a comment</p>
-                  </div>
-                </div>
-                <div className="flex gap-2 p-4">
-                  <img
-                    src={profile}
-                    alt="commenter-profile-pic"
-                    className="w-10 h-10"
-                  />
-                  <div className="p-2 bg-gray-200 rounded-xl">
-                    <h3 className="font-medium">John Doe</h3>
-                    <p className="text-gray-800">This is a comment</p>
-                  </div>
-                </div>
+                {comments?.map((comment) => {
+                  if (post.id !== comment.post_id) return;
+
+                  return (
+                    <div className="flex gap-2 p-4" key={comment.id}>
+                      <img
+                        src={profile}
+                        alt="commenter-profile-pic"
+                        className="w-10 h-10"
+                      />
+                      <div className="p-2 bg-gray-200 rounded-xl">
+                        <h3 className="font-medium">John Doe</h3>
+                        <p className="text-gray-800">{comment.text}</p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Write New Comment Wrapper */}
@@ -285,31 +226,9 @@ const Home = () => {
                     : styles.postSection.commentsCloseStyles.writeNewComment
                 }
               >
-                <form
-                  id={`${post.id}`}
-                  onSubmit={handleSubmit(onSubmit, onError)}
-                  noValidate
-                  className="w-[90%] flex flex-col justify-start gap-2 "
-                >
-                  <label htmlFor="comment" className="">
-                    Write a comment:
-                  </label>
-                  <input
-                    className="w-full h-10 p-2 bg-gray-200 border-2 border-gray-200 rounded-2xl"
-                    type="text"
-                    {...register("text", {})}
-                  />
-                  <Button
-                    styles="w-[30%] md:w-[40%] p-1 text-white text-xs bg-slate-500 rounded drop-shadow-md"
-                    disabled={isSubmitting}
-                    value="Submit"
-                    type="submit"
-                    onClick={() => null}
-                  />
-                </form>
+                <NewComment postId={post.id} />
               </div>
             </div>
-            <DevTool control={control} />
           </section>
         );
       })}

@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import http from "../utils/http";
-import { Navigate, useLoaderData } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import Button from "../components/Button";
+import { useLoaderData } from "react-router-dom";
 // import EditProfileDialog from "../components/material-ui/EditProfileDialog";
 import EditProfileDialog from "../components/headless-ui/EditProfileDialog";
 import EditPostDialog from "../components/headless-ui/EditPostDialog";
@@ -11,33 +9,36 @@ import EditPostDialog from "../components/headless-ui/EditPostDialog";
 import profile from "../assets/imgs/149071.png";
 import commentIcon from "../assets/icons/comment-regular.svg";
 import likeIcon from "../assets/icons/thumbs-up-regular.svg";
-import xMark from "../assets/icons/xmark-solid.svg";
+import xMarkBlack from "../assets/icons/xmark-solid-black.svg";
 import likeIconFilled from "../assets/icons/thumbs-up-solid.svg";
 import threePointsMenu from "../assets/icons/ellipsis-solid.svg";
-import editIcon from "../assets/icons/pen-solid.svg";
 import deleteIcon from "../assets/icons/trash-solid.svg";
 
 //Types and styles
-import { CommentFormValues, ProfileLoaderData } from "../types/loaderTypes";
+import { ProfileLoaderData } from "../types/loaderTypes";
 import {
-  editProfileOpen,
-  editProfileClose,
   threePointsMenuClose,
   threePointsMenuOpen,
 } from "../styles/profilePage";
 import { allStyles } from "../styles/allStyles";
+import NewComment from "../components/forms/NewComment";
 
 const Profile = () => {
   const data = useLoaderData() as ProfileLoaderData;
   const { userDataResponse, likesResponse } = data;
 
-  const [posts, setPosts] = useState(userDataResponse.userData.posts);
+  const [posts] = useState(userDataResponse.userData.posts);
   const [comments] = useState(userDataResponse.userData.comments);
-  const [uploads, setUploads] = useState(userDataResponse.userUploads);
+  const [uploads] = useState(userDataResponse.userUploads);
+  const [profilePic, setProfilePic] = useState(
+    userDataResponse.userData.profile_pic
+  );
   const [likes, setLikes] = useState<number[]>([]);
-  const [styles, setStyles] = useState(allStyles);
+  const [styles] = useState(allStyles);
   const [commentsOpen, setCommentsOpen] = useState<number[]>([]);
   const [pointsMenuOpen, setPointsMenuOpen] = useState<number[]>([]);
+
+  console.log(userDataResponse);
 
   useEffect(() => {
     const likeIds = likesResponse.likes?.map((like) => like.post_id);
@@ -47,24 +48,6 @@ const Profile = () => {
   }, []);
 
   //Handling functions
-  const handleEditProfileClick = async () => {
-    setStyles((prevStyles) => {
-      return {
-        ...prevStyles,
-        profileSection: editProfileOpen,
-      };
-    });
-  };
-  const handleCloseEditProfileClick = () => {
-    setStyles((prevStyles) => {
-      return {
-        ...prevStyles,
-        profileSection: editProfileClose,
-      };
-    });
-  };
-  // const handleAddProfilePicClick = () => null;
-
   const handlePointsMenuClick = (
     e: React.MouseEvent<HTMLImageElement, MouseEvent>
   ) => {
@@ -81,7 +64,6 @@ const Profile = () => {
         return [...prevValue];
       });
     }
-    console.log(pointsMenuOpen);
   };
   const handleDeletePostClick = async (
     e: React.MouseEvent<HTMLHeadingElement, MouseEvent>
@@ -92,7 +74,7 @@ const Profile = () => {
       await http.get("/sanctum/csrf-cookie");
       await http.delete(`/api/post/delete/${postId}`);
 
-      //ToDo: Redirect after deleting post
+      //ToDo: Redirect after deleting post or provoke a reload
       // <Navigate to={"/profile"} />;
     } catch (exception) {
       console.log(exception);
@@ -156,43 +138,24 @@ const Profile = () => {
     });
   };
 
-  //======Write a new comment form===========//
-  const form = useForm<CommentFormValues>();
-  const {
-    register,
-    handleSubmit,
-    formState: { isSubmitting },
-  } = form;
-
-  const onSubmit = (data: CommentFormValues) => {
-    console.log(data);
-
-    // posts.map(async (post: any) => {
-    //   try {
-    //     await http.get("/sanctum/csrf-cookie");
-    //     const response = await http.post(
-    //       `/api/comment/insert/${post.id}`,
-    //       data
-    //     );
-    //     console.log(response);
-    //   } catch (exception: any) {
-    //     console.log(exception);
-    //   }
-    // });
-  };
-
-  const onError = () => {};
-
   const baseUrl = "http://localhost:80";
 
   return (
     <>
       <section className="flex flex-col w-full pt-10">
-        <div className="bg-gray-400 w-full h-[150px] absolute rounded-b-2xl"></div>
+        <div className="bg-gray-500 w-full h-[150px] absolute rounded-b-2xl"></div>
 
         <section className="flex flex-col items-center w-full px-6 bg-gray-300 pb-7 md:flex-row md:justify-between lg:justify-start">
           <div className="z-10 w-1/2 pt-16 xs:w-2/5 sm:w-1/3 md:w-1/4 lg:w-[230px]">
-            <img src={profile} alt="profile-pic" />
+            {profilePic ? (
+              <img
+                src={`${baseUrl}/${profilePic.path}`}
+                alt="profile-pic"
+                className="rounded-full"
+              />
+            ) : (
+              <img src={profile} alt="profile-pic" />
+            )}
           </div>
 
           <div className="flex flex-col items-center w-1/2 gap-2 pt-2 md:h-full md:w-4/5 md:pt-40 md:flex-row md:justify-between md:pl-5 ">
@@ -200,7 +163,7 @@ const Profile = () => {
               {userDataResponse.userData.name}
             </h1>
 
-            <EditProfileDialog />
+            <EditProfileDialog profilePic={profilePic} />
           </div>
         </section>
       </section>
@@ -226,7 +189,7 @@ const Profile = () => {
               }
             >
               <img
-                src={xMark}
+                src={xMarkBlack}
                 alt="x-mark"
                 className="w-6 h-6 cursor-pointer"
               />
@@ -264,12 +227,7 @@ const Profile = () => {
                       : threePointsMenuClose
                   }
                 >
-                  {/* <div className="flex items-center gap-2 text-gray-200 cursor-pointer hover:underline">
-                    <img src={editIcon} alt="pen-icon" className="w-4 h-4" />
-                    <h4>Edit Post</h4>
-                  </div> */}
-
-                  <EditPostDialog />
+                  <EditPostDialog post={post} uploads={uploads} />
 
                   <div className="flex items-center gap-2 text-gray-200 cursor-pointer hover:underline">
                     <img
@@ -290,8 +248,7 @@ const Profile = () => {
               </div>
 
               {uploads?.map((upload) => {
-                if (post.id !== (upload.post_id as any)) return;
-                // console.log(upload);
+                if (post.id !== Number(upload.post_id)) return;
 
                 return (
                   <div key={upload.id} className="xs:w-full">
@@ -342,7 +299,7 @@ const Profile = () => {
                 className={
                   commentsOpen.includes(post.id)
                     ? styles.postSection.commentsOpenStyles.commentsWrapper
-                    : styles.postSection.commentsCloseStyles.commentsWrapper
+                    : "overflow-hidden h-auto bg-gray-300"
                 }
               >
                 <p
@@ -359,39 +316,23 @@ const Profile = () => {
                   View all comments
                 </p>
 
-                <div className="flex gap-2 p-4">
-                  <img
-                    src={profile}
-                    alt="commenter-profile-pic"
-                    className="w-10 h-10"
-                  />
-                  <div className="p-2 bg-gray-200 rounded-xl">
-                    <h3 className="font-medium">John Doe</h3>
-                    <p className="text-gray-800">This is a comment</p>
-                  </div>
-                </div>
-                <div className="flex gap-2 p-4">
-                  <img
-                    src={profile}
-                    alt="commenter-profile-pic"
-                    className="w-10 h-10"
-                  />
-                  <div className="p-2 bg-gray-200 rounded-xl">
-                    <h3 className="font-medium">John Doe</h3>
-                    <p className="text-gray-800">This is a comment</p>
-                  </div>
-                </div>
-                <div className="flex gap-2 p-4">
-                  <img
-                    src={profile}
-                    alt="commenter-profile-pic"
-                    className="w-10 h-10"
-                  />
-                  <div className="p-2 bg-gray-200 rounded-xl">
-                    <h3 className="font-medium">John Doe</h3>
-                    <p className="text-gray-800">This is a comment</p>
-                  </div>
-                </div>
+                {comments?.map((comment) => {
+                  if (post.id !== comment.post_id) return;
+
+                  return (
+                    <div key={comment.id} className="flex gap-2 p-4">
+                      <img
+                        src={profile}
+                        alt="commenter-profile-pic"
+                        className="w-10 h-10"
+                      />
+                      <div className="p-2 bg-gray-200 rounded-xl">
+                        <h3 className="font-medium">John Doe</h3>
+                        <p className="text-gray-800">{comment.text}</p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Write New Comment Wrapper */}
@@ -403,27 +344,7 @@ const Profile = () => {
                     : styles.postSection.commentsCloseStyles.writeNewComment
                 }
               >
-                <form
-                  onSubmit={handleSubmit(onSubmit, onError)}
-                  noValidate
-                  className="w-[90%] flex flex-col justify-start gap-2 "
-                >
-                  <label htmlFor="comment" className="">
-                    Write a comment:
-                  </label>
-                  <input
-                    className="w-full h-10 p-2 bg-gray-200 border-2 border-gray-200 rounded-2xl"
-                    type="text"
-                    {...register("text", {})}
-                  />
-                  <Button
-                    styles="w-[30%] md:w-[40%] p-1 text-white text-xs bg-slate-500 rounded drop-shadow-md"
-                    disabled={isSubmitting}
-                    value="Submit"
-                    type="submit"
-                    onClick={() => null}
-                  />
-                </form>
+                <NewComment postId={post.id} />
               </div>
             </div>
           </section>

@@ -1,16 +1,30 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useState } from "react";
-import editIcon from "../../assets/icons/pen-solid.svg";
 import http from "../../utils/http";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { Oval } from "react-loader-spinner";
+import { useNavigate } from "react-router-dom";
+
+// Icons and Images
+import editIcon from "../../assets/icons/pen-solid.svg";
+
+// Types and Styles
+import { File, Post } from "../../types/loaderTypes";
+
+type Props = {
+  post: Post;
+  uploads: File[];
+};
 
 type FormValues = {
   title: string;
   text: string;
 };
 
-export default function MyModal() {
+export default function EditPostDialog({ post, uploads }: Props) {
   let [isOpen, setIsOpen] = useState(false);
+
+  const navigate = useNavigate();
 
   function closeModal() {
     setIsOpen(false);
@@ -30,26 +44,23 @@ export default function MyModal() {
   } = form;
 
   // This function is called when the fields are correctly validated
-  const onSubmit = async (data: FormValues) => {
-    console.log("Submit");
-    return;
-
+  const onSubmit: SubmitHandler<FormValues> = async (data, e) => {
     try {
       await http.get("/sanctum/csrf-cookie");
-      const response = await http.post("/api/post/update/{id}", data);
-      console.log(response);
+      await http.patch(`/api/post/update/${e?.target.id}`, data);
+
+      // navigate("/profile");
     } catch (exception: any) {
       console.log(exception);
     }
-
-    console.log("Formular Submitted");
-    return;
   };
 
   // This function is called when when we have validation errors
   const onError = () => {
     console.log("Formular Error");
   };
+
+  const baseUrl = "http://localhost:80";
 
   return (
     <>
@@ -90,19 +101,35 @@ export default function MyModal() {
                   >
                     Edit Post
                   </Dialog.Title>
+
                   <form
+                    id={`${post.id}`}
                     onSubmit={handleSubmit(onSubmit, onError)}
                     noValidate
                     className="flex flex-col self-center w-full gap-4 p-10 bg-gray-100 border rounded-md"
                   >
-                    <h1 className="pb-8 text-3xl font-bold">
-                      Show the Post You Want to edit
-                    </h1>
+                    {uploads?.map((upload) => {
+                      if (post.id !== Number(upload.post_id)) return;
+
+                      return (
+                        <div
+                          key={upload.id}
+                          className="overflow-hidden rounded-lg xs:w-full"
+                        >
+                          <img
+                            src={`${baseUrl}/${upload.path}`}
+                            alt={upload.alt_text}
+                            className="xs:w-full "
+                          />
+                        </div>
+                      );
+                    })}
 
                     <div className="flex flex-col">
                       <label htmlFor="title">Title</label>
                       <input
                         className="h-10 p-2 border-2 border-gray-300 rounded"
+                        // value={post.title}
                         type="text"
                         id="title"
                         {...register("title", {
@@ -118,19 +145,29 @@ export default function MyModal() {
                     <div>
                       <textarea
                         className="w-full p-2 border-2 border-gray-300 rounded "
+                        // value={post.text}
                         placeholder="Post Discription ..."
                         {...register("text", {})}
                       ></textarea>
                     </div>
 
-                    <div className="self-center mt-4">
+                    <div className="flex self-center justify-center gap-2 mt-4">
                       <button
-                        type="button"
+                        type="submit"
                         className="inline-flex justify-center px-4 py-2 text-sm font-medium text-blue-900 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                        onClick={closeModal}
+                        // onClick={closeModal}
                       >
                         Confirm Changes
                       </button>
+
+                      {isSubmitting ? (
+                        <Oval
+                          height={"32"}
+                          width={"32"}
+                          color="#6464C8"
+                          strokeWidth={"4"}
+                        />
+                      ) : null}
                     </div>
                   </form>
                 </Dialog.Panel>

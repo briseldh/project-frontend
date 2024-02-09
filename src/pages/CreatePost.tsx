@@ -2,16 +2,11 @@ import { useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
 import Button from "../components/Button";
 import http from "../utils/http";
+import { PostFormValues } from "../types/formTypes";
 import NewCommenTry from "./NewCommenTry";
 
-type FormValues = {
-  title: string;
-  avatar: FileList;
-  text: string;
-};
-
 const CreatePost = () => {
-  const form = useForm<FormValues>();
+  const form = useForm<PostFormValues>();
   const {
     register,
     control,
@@ -20,7 +15,7 @@ const CreatePost = () => {
   } = form;
 
   // This function is called when the fields are correctly validated
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: PostFormValues) => {
     // console.log(
 
     const allData = {
@@ -41,9 +36,6 @@ const CreatePost = () => {
     } catch (exception: any) {
       console.log(exception);
     }
-
-    console.log("Formular Submitted");
-    return;
   };
 
   // This function is called when when we have validation errors

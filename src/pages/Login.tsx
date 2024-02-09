@@ -7,19 +7,9 @@ import { AuthContext } from "../context/AuthProvider";
 import http from "../utils/http";
 import { Oval } from "react-loader-spinner";
 
-type FormValues = {
-  email: string;
-  password: string;
-};
-
-type UserData = {
-  created_at: string;
-  email: string;
-  id: number;
-  name: string;
-  role: string;
-  updated_at: string;
-};
+//Types and Styles
+import { LoginFormValues } from "../types/formTypes";
+import { UserData } from "../types/loaderTypes";
 
 const Login = () => {
   const { auth, setAuth } = useContext(AuthContext);
@@ -28,7 +18,7 @@ const Login = () => {
   const { state } = useLocation();
   const { from = "/" } = state || {}; //When from is empty then the default is "/", when not than is the coresponding page url for example /profile
 
-  const form = useForm<FormValues>();
+  const form = useForm<LoginFormValues>();
 
   const {
     register,
@@ -41,7 +31,7 @@ const Login = () => {
   console.log(auth);
 
   // This function is called when the fields are correctly validated
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: LoginFormValues) => {
     //Logic for login
     try {
       await http.get("/sanctum/csrf-cookie");

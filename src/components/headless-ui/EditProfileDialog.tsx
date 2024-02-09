@@ -1,14 +1,38 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useState } from "react";
 
+//Components
+import EditProfilePicDialog from "./EditProfilePicDialog";
+import AddProfilePicDialog from "./AddProfilePicDialog";
+
 //Image and Icons
 import profile from "../../assets/imgs/149071.png";
+import XmarkBlack from "../../assets/icons/xmark-solid-black.svg";
 
-export default function EditProfileDialog() {
+//Types and Styles
+import { ProfilePic } from "../../types/loaderTypes";
+import http from "../../utils/http";
+
+type Props = {
+  profilePic: ProfilePic;
+};
+
+export default function EditProfileDialog({ profilePic }: Props) {
   let [isOpen, setIsOpen] = useState(false);
 
   //Handling Functions
-  const handleAddProfilePicClick = () => null;
+  const hadleDeleteProfilePicClick = async () => {
+    try {
+      await http.get("/sanctum/csrf-cookie");
+      const response = await http.delete(
+        `/api/profilePic/delete/${profilePic?.id}`
+      );
+
+      console.log(response);
+    } catch (exception) {
+      console.log(exception);
+    }
+  };
 
   function closeModal() {
     setIsOpen(false);
@@ -18,13 +42,15 @@ export default function EditProfileDialog() {
     setIsOpen(true);
   }
 
+  const baseUrl = "http://localhost:80";
+
   return (
     <>
       <div className="inset-0 flex items-center justify-center">
         <button
           type="button"
           onClick={openModal}
-          className="p-2 px-4 font-medium text-white bg-gray-500 rounded-md text-md hover:bg-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75"
+          className="p-2 px-4 font-medium text-white bg-blue-500 rounded-md text-md hover:bg-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75"
         >
           Edit Profile
         </button>
@@ -64,32 +90,43 @@ export default function EditProfileDialog() {
                       Edit Profile
                     </Dialog.Title>
 
-                    <button
-                      type="button"
-                      className="inline-flex justify-center px-4 py-2 text-sm font-medium text-blue-900 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    <div
+                      className="p-1 overflow-hidden rounded-full cursor-pointer hover:bg-gray-400"
                       onClick={closeModal}
                     >
-                      X
-                    </button>
+                      <img
+                        src={XmarkBlack}
+                        alt="X-mark"
+                        className="w-5 h-5"
+                        onClick={closeModal}
+                      />
+                    </div>
                   </div>
 
                   <div>
                     <div className="flex flex-col items-center w-full py-6 gap-7">
                       <div className="flex items-center justify-between w-full pr-2">
-                        <h4 className="text-xl font-semibold text-gray-900">
-                          Profile Picture
-                        </h4>
-                        <p
-                          className="text-lg font-medium text-blue-500 cursor-pointer"
-                          onClick={handleAddProfilePicClick}
+                        <button
+                          type="button"
+                          onClick={hadleDeleteProfilePicClick}
+                          className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75"
                         >
-                          Add
-                        </p>
+                          Delete
+                        </button>
+
+                        {!profilePic ? (
+                          <AddProfilePicDialog />
+                        ) : (
+                          <EditProfilePicDialog profilePicId={profilePic.id} />
+                        )}
                       </div>
+
                       <img
-                        src={profile}
+                        src={
+                          profilePic ? `${baseUrl}/${profilePic.path}` : profile
+                        }
                         alt="profile-pic"
-                        className="w-44 h-44"
+                        className="rounded-full w-44 h-44"
                       />
                     </div>
                   </div>

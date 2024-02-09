@@ -7,20 +7,9 @@ import { useContext } from "react";
 import { AuthContext } from "../context/AuthProvider";
 import { Oval } from "react-loader-spinner";
 
-type FormValues = {
-  username: string;
-  email: string;
-  password: string;
-};
-
-type UserData = {
-  created_at: string;
-  email: string;
-  id: number;
-  name: string;
-  role: string;
-  updated_at: string;
-};
+//Types and Styles
+import { RegisterFormValues } from "../types/formTypes";
+import { UserData } from "../types/loaderTypes";
 
 const Register = () => {
   const { auth, setAuth } = useContext(AuthContext);
@@ -29,7 +18,7 @@ const Register = () => {
   const { state } = useLocation();
   const { from = "/" } = state || {};
 
-  const form = useForm<FormValues>();
+  const form = useForm<RegisterFormValues>();
   const {
     register,
     control,
@@ -40,7 +29,7 @@ const Register = () => {
 
   console.log(auth);
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: RegisterFormValues) => {
     try {
       await http.get("/sanctum/csrf-cookie");
       await http.post("/api/register", data);
