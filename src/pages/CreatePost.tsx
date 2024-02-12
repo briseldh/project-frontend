@@ -3,9 +3,12 @@ import { DevTool } from "@hookform/devtools";
 import Button from "../components/Button";
 import http from "../utils/http";
 import { PostFormValues } from "../types/formTypes";
-import NewCommenTry from "./NewCommenTry";
+import { useNavigate } from "react-router-dom";
+import { Oval } from "react-loader-spinner";
 
 const CreatePost = () => {
+  const navigate = useNavigate();
+
   const form = useForm<PostFormValues>();
   const {
     register,
@@ -16,8 +19,6 @@ const CreatePost = () => {
 
   // This function is called when the fields are correctly validated
   const onSubmit = async (data: PostFormValues) => {
-    // console.log(
-
     const allData = {
       ...data,
       avatar: data.avatar[0],
@@ -31,8 +32,9 @@ const CreatePost = () => {
           "Content-Type": "multipart/form-data",
         },
       });
-
       console.log(response);
+
+      navigate("/profile");
     } catch (exception: any) {
       console.log(exception);
     }
@@ -60,10 +62,10 @@ const CreatePost = () => {
               type="text"
               id="title"
               {...register("title", {
-                // required: {
-                //   value: true,
-                //   message: "Please enter a title for this post",
-                // },
+                required: {
+                  value: true,
+                  message: "Please enter a title for this post",
+                },
               })}
             />
             <p className="text-red-600">{errors.title?.message}</p>
@@ -93,16 +95,26 @@ const CreatePost = () => {
             />
           </div>
 
-          <Button
-            styles=""
-            disabled={isSubmitting}
-            value="Create"
-            type="submit"
-            onClick={() => null}
-          />
+          <div className="flex justify-center gap-2">
+            <Button
+              styles=""
+              disabled={isSubmitting}
+              value="Create"
+              type="submit"
+              onClick={() => null}
+            />
+
+            {isSubmitting ? (
+              <Oval
+                height={"32"}
+                width={"32"}
+                color="#6464C8"
+                strokeWidth={"4"}
+              />
+            ) : null}
+          </div>
         </form>
       </section>
-      {/* <NewCommenTry /> */}
       <DevTool control={control} />
     </>
   );

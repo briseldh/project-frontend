@@ -15,7 +15,7 @@ import threePointsMenu from "../assets/icons/ellipsis-solid.svg";
 import deleteIcon from "../assets/icons/trash-solid.svg";
 
 //Types and styles
-import { ProfileLoaderData } from "../types/loaderTypes";
+import { Comments, ProfileLoaderData } from "../types/loaderTypes";
 import {
   threePointsMenuClose,
   threePointsMenuOpen,
@@ -28,17 +28,19 @@ const Profile = () => {
   const { userDataResponse, likesResponse } = data;
 
   const [posts] = useState(userDataResponse.userData.posts);
-  const [comments] = useState(userDataResponse.userData.comments);
+  const [comments, setComments] = useState(userDataResponse.userData.comments);
   const [uploads] = useState(userDataResponse.userUploads);
   const [profilePic, setProfilePic] = useState(
     userDataResponse.userData.profile_pic
   );
   const [likes, setLikes] = useState<number[]>([]);
+  const [allLikes, setAllLikes] = useState(likesResponse.allLikes);
   const [styles] = useState(allStyles);
   const [commentsOpen, setCommentsOpen] = useState<number[]>([]);
   const [pointsMenuOpen, setPointsMenuOpen] = useState<number[]>([]);
 
-  console.log(userDataResponse);
+  // console.log(userDataResponse);
+  console.log(allLikes);
 
   useEffect(() => {
     const likeIds = likesResponse.likes?.map((like) => like.post_id);
@@ -46,6 +48,14 @@ const Profile = () => {
 
     return () => {};
   }, []);
+
+  // useEffect(() => {
+  //   (async () => {
+  //     const allComments: Comments[] = await http.get("/api/comment/getAll");
+  //     setComments(allComments);
+  //     console.log(allComments);
+  //   })();
+  // }, []);
 
   //Handling functions
   const handlePointsMenuClick = (
@@ -169,6 +179,14 @@ const Profile = () => {
       </section>
 
       {posts?.map((post) => {
+        //Filtering through all comments so that i can check the length of the comments for a particular post.
+        const postComments = comments.filter(
+          (comment) => comment.post_id === post.id
+        );
+
+        //Filtering through all likes so that i can check how many likes a particular post has.
+        const postLikes = allLikes.filter((like) => like.post_id === post.id);
+
         return (
           <section
             id="post-section"
@@ -277,6 +295,22 @@ const Profile = () => {
                   />
 
                   <p>Like</p>
+
+                  <p>{postLikes.length}</p>
+
+                  {/* {allLikes?.map((like) => {
+                    let postLikes = [];
+
+                    if (like.post_id === post.id) {
+                      postLikes.push(like);
+                    }
+
+                    return (
+                      <p key={like.id}>
+                        {postLikes.length > 0 ? postLikes.length : null}
+                      </p>
+                    );
+                  })} */}
                 </div>
 
                 <div
@@ -299,36 +333,40 @@ const Profile = () => {
                 className={
                   commentsOpen.includes(post.id)
                     ? styles.postSection.commentsOpenStyles.commentsWrapper
-                    : "overflow-hidden h-auto bg-gray-300"
+                    : styles.postSection.commentsCloseStyles.commentsWrapper
                 }
               >
-                <p
-                  id={`${post.id}`}
-                  onClick={(e) => handleViewAllCommentsClick(e)}
-                  className={
-                    commentsOpen.includes(post.id)
-                      ? styles.postSection.commentsOpenStyles
-                          .viewAllCommentsLink
-                      : styles.postSection.commentsCloseStyles
-                          .viewAllCommentsLink
-                  }
-                >
-                  View all comments
-                </p>
+                {postComments.length > 2 ? (
+                  <p
+                    id={`${post.id}`}
+                    onClick={(e) => handleViewAllCommentsClick(e)}
+                    className={
+                      commentsOpen.includes(post.id)
+                        ? styles.postSection.commentsOpenStyles
+                            .viewAllCommentsLink
+                        : styles.postSection.commentsCloseStyles
+                            .viewAllCommentsLink
+                    }
+                  >
+                    View all comments
+                  </p>
+                ) : null}
 
                 {comments?.map((comment) => {
                   if (post.id !== comment.post_id) return;
 
                   return (
-                    <div key={comment.id} className="flex gap-2 p-4">
-                      <img
-                        src={profile}
-                        alt="commenter-profile-pic"
-                        className="w-10 h-10"
-                      />
-                      <div className="p-2 bg-gray-200 rounded-xl">
-                        <h3 className="font-medium">John Doe</h3>
-                        <p className="text-gray-800">{comment.text}</p>
+                    <div key={comment.id} className="flex flex-col gap-4 p-4">
+                      <div className="flex gap-2">
+                        <img
+                          src={profile}
+                          alt="commenter-profile-pic"
+                          className="w-10 h-10"
+                        />
+                        <div className="p-2 bg-gray-200 rounded-xl">
+                          <h3 className="font-medium">John Doe</h3>
+                          <p className="text-gray-800">{comment.text}</p>
+                        </div>
                       </div>
                     </div>
                   );

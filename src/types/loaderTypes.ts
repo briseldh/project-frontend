@@ -20,7 +20,9 @@ export type PostsResponse = {
 }
 
 export type LikesResponse = {
-    likes: Likes[]
+    likes: Likes[],
+    allLikes: Likes[];
+    // likesCount: number;
 }
 
 export type UserData = {
@@ -43,7 +45,7 @@ export type Post = {
     text: string;
     title: string;
     updated_at: string;
-    user_id: string;
+    user_id: number;
 }
 
 export type Comments = {

@@ -1,5 +1,8 @@
 import { SubmitHandler, useForm } from "react-hook-form";
 
+// Icons and Images
+import sendComment from "../../assets/icons/send-comment.svg";
+
 // Types and Styles
 import { CommentFormValues } from "../../types/formTypes";
 import Button from "../Button";
@@ -34,7 +37,7 @@ const NewComment = ({ postId }: Props) => {
       id={`${postId}`}
       onSubmit={handleSubmit(onSubmit, onError)}
       noValidate
-      className="w-[90%] flex flex-col justify-start gap-2 "
+      className="w-[95%] flex justify-start gap-3 flex-col "
     >
       <label htmlFor="comment" className="">
         Write a comment:
@@ -44,8 +47,17 @@ const NewComment = ({ postId }: Props) => {
         type="text"
         {...register("text", {})}
       />
+
+      {/* <div onClick={} className="pt-2">
+        <img src={sendComment} alt="send-comment-icon" className="w-6 h-6" />
+      </div> */}
+
       <Button
-        styles="w-[30%] md:w-[40%] p-1 text-white text-xs bg-slate-500 rounded drop-shadow-md"
+        styles={
+          !isSubmitting
+            ? "w-[30%]  p-1 text-white text-xs bg-blue-500 rounded drop-shadow-md"
+            : "w-[30%]  p-1 text-white text-xs bg-blue-400 rounded drop-shadow-md"
+        }
         disabled={isSubmitting}
         value="Submit"
         type="submit"

@@ -23,6 +23,7 @@ const Home = () => {
   const [comments] = useState(postsResponse.comments);
   const [styles] = useState(allStyles);
   const [likes, setLikes] = useState<number[]>([]);
+  const [allLikes, setAllLikes] = useState(likesResponse.allLikes);
   const [commentsOpen, setCommentsOpen] = useState<number[]>([]);
 
   useEffect(() => {
@@ -96,6 +97,14 @@ const Home = () => {
   return (
     <section className="pt-16 bg-gray-400">
       {posts?.map((post) => {
+        //Filtering through all comments so that i can check the length of the comments for a particular post.
+        const postComments = comments.filter(
+          (comment) => comment.post_id === post.id
+        );
+
+        //Filtering through all likes so that i can check how many likes a particular post has.
+        const postLikes = allLikes.filter((like) => like.post_id === post.id);
+
         return (
           <section
             id="post-section"
@@ -158,6 +167,8 @@ const Home = () => {
                   />
 
                   <p>Like</p>
+
+                  <p>{postLikes.length}</p>
                 </div>
 
                 {/* Comment Icon */}
@@ -184,19 +195,21 @@ const Home = () => {
                     : styles.postSection.commentsCloseStyles.commentsWrapper
                 }
               >
-                <p
-                  id={`${post.id}`}
-                  onClick={(e) => handleViewAllCommentsClick(e)}
-                  className={
-                    commentsOpen.includes(post.id)
-                      ? styles.postSection.commentsOpenStyles
-                          .viewAllCommentsLink
-                      : styles.postSection.commentsCloseStyles
-                          .viewAllCommentsLink
-                  }
-                >
-                  View all comments
-                </p>
+                {postComments.length > 2 ? (
+                  <p
+                    id={`${post.id}`}
+                    onClick={(e) => handleViewAllCommentsClick(e)}
+                    className={
+                      commentsOpen.includes(post.id)
+                        ? styles.postSection.commentsOpenStyles
+                            .viewAllCommentsLink
+                        : styles.postSection.commentsCloseStyles
+                            .viewAllCommentsLink
+                    }
+                  >
+                    View all comments
+                  </p>
+                ) : null}
 
                 {comments?.map((comment) => {
                   if (post.id !== comment.post_id) return;
@@ -245,6 +258,13 @@ export const homeLoader = async () => {
   try {
     const postsResponse = await http.get("/api/post/getAll");
     const likesResponse = await http.get("/api/like/getUserLikes");
+
+    // if (likesResponse.status === 401) {
+    //   return {
+    //     postsResponse: postsResponse.data,
+    //     likesResponse: {},
+    //   };
+    // }
 
     return {
       postsResponse: postsResponse.data,
