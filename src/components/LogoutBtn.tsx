@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { AuthContext, defaultAuth } from "../context/AuthProvider";
 import http from "../utils/http";
 
@@ -8,12 +8,23 @@ import logoutIconWhite from "../assets/icons/logout-icon-white.svg";
 const LogoutBtn = () => {
   const { auth, setAuth } = useContext(AuthContext);
 
+  const [clicked, setClicked] = useState(false);
+
   const handleClick = async () => {
     try {
+      setClicked(true);
+
       await http.get("/sanctum/csrf-cookie");
       await http.post("/api/logout");
 
       setAuth(defaultAuth);
+
+      setAuth((prevAuth) => {
+        return {
+          ...prevAuth,
+          requestStatus: "sent",
+        };
+      });
 
       console.log("Logged out successfully");
     } catch (error) {
@@ -23,7 +34,11 @@ const LogoutBtn = () => {
 
   return (
     <div
-      className="flex items-center gap-2 px-2 py-1 rounded-md cursor-pointer hover:bg-blue-500 active:bg-opacity-50"
+      className={
+        !clicked
+          ? "flex items-center gap-2 px-2 py-1 rounded-md cursor-pointer hover:bg-blue-500 active:bg-opacity-50"
+          : "flex items-center gap-2 px-2 py-1 rounded-md  bg-blue-500 active:bg-opacity-50"
+      }
       onClick={handleClick}
     >
       <img src={logoutIconWhite} alt="Logout-Icon" className="w-5 h-5" />

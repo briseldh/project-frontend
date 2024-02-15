@@ -4,8 +4,11 @@ import { ProfilePicFormValues } from "../../types/formTypes";
 import { useForm } from "react-hook-form";
 import http from "../../utils/http";
 import Button from "../Button";
+import { useRevalidator } from "react-router-dom";
 
 export default function EditProfilePicDialog() {
+  const { revalidate, state: loadingState } = useRevalidator();
+
   let [isOpen, setIsOpen] = useState(false);
 
   function closeModal() {
@@ -40,8 +43,9 @@ export default function EditProfilePicDialog() {
           "Content-Type": "multipart/form-data",
         },
       });
-
       console.log(response);
+
+      revalidate();
     } catch (exception: any) {
       console.log(exception);
 

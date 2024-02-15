@@ -76,8 +76,6 @@ const Login = () => {
 
           setError(fieldName as FieldName, errors[0]);
         }
-
-        // console.log(Object.entries(errors));
       }
 
       if (exception.response.status === 401) {

@@ -1,12 +1,14 @@
 import { createContext, useState, ReactNode, useEffect } from "react";
 import http from "../utils/http";
+import { useQuery } from "@tanstack/react-query";
+import { UserDataResponse } from "../types/loaderTypes";
 
 type Props = {
   children: ReactNode;
 };
 
 // DO NOT STORE PASSWORDS IN CONTEXT
-type Auth = {
+export type Auth = {
   id: number | null;
   username: string | null;
   role: "admin" | "user" | null;
@@ -35,35 +37,61 @@ export const AuthContext = createContext<AuthContext>(defaultAuthContext);
 const AuthProvider = ({ children }: Props) => {
   const [auth, setAuth] = useState<Auth>(defaultAuth);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        await http.get("/sanctum/csrf-cookie");
-        const response = await http.get("api/getUserData");
-        // console.log(response);
+  // if (data) {
+  //   const userData = data.userData;
 
-        const userData = response.data.userData;
+  //   useEffect(() => {
+  //     setAuth((prevAuth) => {
+  //       return {
+  //         ...prevAuth,
+  //         id: userData.id,
+  //         username: userData.name,
+  //         role: userData.role,
+  //         requestStatus: "sent",
+  //       };
+  //     });
+  //   }, [data]);
+  // }
 
+  const { data, status } = useQuery({
+    queryKey: ["auth"],
+    queryFn: async () => {
+      await fetch("http://localhost:80/sanctum/csrf-cookie");
+      const res = await fetch("http://localhost:80/api/getUserData", {
+        credentials: "include",
+      });
+
+      if (!res.ok) {
         setAuth((prevAuth) => {
           return {
             ...prevAuth,
-            id: userData.id,
-            username: userData.name,
-            role: userData.role,
             requestStatus: "sent",
           };
         });
-      } catch (error) {
-        setAuth((prevAuth) => {
-          return {
-            ...prevAuth,
-            requestStatus: "sent",
-          };
-        });
-        console.log(error);
+
+        console.log("Failed to fetch data");
+        throw new Error(`HTTP Error: ${res.status}`);
       }
-    })();
-  }, []);
+
+      return res.json();
+    },
+  });
+
+  useEffect(() => {
+    if (!data) {
+      return;
+    }
+
+    setAuth((prevAuth) => {
+      return {
+        ...prevAuth,
+        id: data.userData.id,
+        username: data.userData.name,
+        role: data.userData.role,
+        requestStatus: "sent",
+      };
+    });
+  }, [status === "success"]);
 
   return (
     <AuthContext.Provider value={{ auth, setAuth }}>
