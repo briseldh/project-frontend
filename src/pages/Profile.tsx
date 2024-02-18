@@ -7,7 +7,7 @@ import NewComment from "../components/forms/NewComment";
 import { Oval } from "react-loader-spinner";
 import { AuthContext } from "../context/AuthProvider";
 
-import { QueryClient } from "@tanstack/react-query";
+import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
 
 //Image and Icons
 import profile from "../assets/imgs/149071.png";
@@ -38,27 +38,56 @@ import { allStyles } from "../styles/allStyles";
 
 const Profile = () => {
   const { auth } = useContext(AuthContext);
-
+  const queryClient = useQueryClient();
   const data = useLoaderData() as ProfileLoaderData;
-
   const { userDataResponse, likesResponse } = data;
+
+  // const initialData = useLoaderData()
+
+  const { data: queryData } = useQuery<UserDataResponse>({
+    queryKey: ["userDataResponse"],
+    queryFn: async () => {
+      //*IMPORTANT* : If the route you want to fetch is private, meaning that you have to be authenticated to access it, then you need to send the credentials too. --> credentials: "include"
+
+      const res = await fetch("http://localhost:80/api/getUserData", {
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        console.log("Failed to fetch data");
+        throw new Error(`HTTP Error: ${res.status}`);
+      }
+
+      return res.json();
+    },
+    staleTime: 1000,
+  });
 
   const [userData, setUserData] = useState<UserData>();
   const [posts, setPosts] = useState<Post[]>();
   const [comments, setComments] = useState<Comments[]>();
   const [uploads, setUploads] = useState<File[]>();
   const [profilePic, setProfilePic] = useState<ProfilePic>();
-  const [likes, setLikes] = useState<number[]>([]);
+  const [userlikes, setUserLikes] = useState<number[]>([]);
   const [allLikes, setAllLikes] = useState<Likes[]>();
   const [styles] = useState(allStyles);
   const [commentsOpen, setCommentsOpen] = useState<number[]>([]);
   const [pointsMenuOpen, setPointsMenuOpen] = useState<number[]>([]);
 
   useEffect(() => {
+    //Checking if the userData state is null so that i know when to run the effect.
+    //This Effect will only run when the component mounts for the first time and never again.
+    if (userData) {
+      console.log("This effect can only be called once.");
+      return;
+    }
+
     // Use the .then() method to handle the resolved data
     userDataResponse
       .then((resolvedData: UserDataResponse) => {
         // Inside the .then() callback, update the state with the resolved data
+        console.log(resolvedData);
+
         setUserData(resolvedData.userData);
         setPosts(resolvedData.userData.posts);
         setComments(resolvedData.userData.comments);
@@ -69,7 +98,7 @@ const Profile = () => {
         // Handle errors if necessary
         console.error("Error fetching data:", error);
       });
-  }, [userDataResponse]);
+  }, []);
 
   useEffect(() => {
     // Use the .then() method to handle the resolved data
@@ -77,26 +106,42 @@ const Profile = () => {
       .then((resolvedData: LikesResponse) => {
         // Inside the .then() callback, update the state with the resolved data
         setAllLikes(resolvedData.allLikes);
+
+        const likeIds = resolvedData.likes.map((like) => like.post_id);
+        setUserLikes(likeIds);
       })
       .catch((error: any) => {
         // Handle errors if necessary
         console.error("Error fetching data:", error);
       });
-  }, [likesResponse]);
+  }, []);
 
   useEffect(() => {
     //Checking if the allLikes state is an array before mapping. If I don't check that than I get a TS error.
     if (Array.isArray(allLikes)) {
       const userLikes = allLikes?.filter((like) => like.user_id === auth.id);
       const likeIds = userLikes!.map((like) => like.post_id);
-      setLikes(likeIds);
+      setUserLikes(likeIds);
     }
 
     return () => {};
   }, []);
 
-  console.log(likes);
-  
+  useEffect(() => {
+    if (!queryData) {
+      // console.log("The userDataResponse query doesent exist");
+      return;
+    }
+
+    //This effect will be called everytime when the query refetches.
+    //It is meant to keep the latest data shown to the user everyrime something happens.
+    queryClient.invalidateQueries({ queryKey: ["userDataResponse"] });
+    setUserData(queryData.userData);
+    setPosts(queryData.userData.posts);
+    setComments(queryData.userData.comments);
+    setUploads(queryData.userUploads);
+    setProfilePic(queryData.userData.profile_pic);
+  }, [queryData]);
 
   // Handling functions
   const handlePointsMenuClick = (
@@ -125,8 +170,9 @@ const Profile = () => {
       await http.get("/sanctum/csrf-cookie");
       await http.delete(`/api/post/delete/${postId}`);
 
-      //ToDo: Redirect after deleting post or provoke a reload
-      // <Navigate to={"/profile"} />;
+      //This query invalidation is called when the user deletes the post so that the effect that runs depending on queryData happens.
+      await queryClient.invalidateQueries({ queryKey: ["userDataResponse"] });
+      console.log("Deleted Successfully");
     } catch (exception) {
       console.log(exception);
     }
@@ -137,27 +183,31 @@ const Profile = () => {
   ) => {
     const postId = Number(e.currentTarget.id);
 
-    if (!likes.includes(postId)) {
+    if (!userlikes.includes(postId)) {
       try {
-        setLikes((prevLikes) => {
-          return [...prevLikes, postId];
+        setUserLikes((prevUserLikes) => {
+          return [...prevUserLikes, postId];
         });
 
         await http.get("/sanctum/csrf-cookie");
         await http.post(`api/like/${postId}`);
+        queryClient.invalidateQueries({ queryKey: ["userDataResponse"] });
       } catch (exception) {
         console.log(exception);
       }
     } else {
       try {
-        setLikes((prevLikes) => {
-          const likeIdx = prevLikes.indexOf(postId);
-          prevLikes.splice(likeIdx, 1);
-          return [...prevLikes];
+        setUserLikes((prevUserLikes) => {
+          const newUserLikes = prevUserLikes.filter(
+            (likeId) => likeId !== postId
+          );
+          console.log(newUserLikes);
+          return newUserLikes;
         });
 
         await http.get("/sanctum/csrf-cookie");
         await http.post(`api/dislike/${postId}`);
+        queryClient.invalidateQueries({ queryKey: ["userDataResponse"] });
       } catch (exception) {
         console.log(exception);
       }
@@ -191,8 +241,6 @@ const Profile = () => {
 
   const baseUrl = "http://localhost:80";
 
-  console.log(auth);
-
   return (
     <>
       <Suspense
@@ -215,7 +263,7 @@ const Profile = () => {
             </p>
           }
         >
-          {() => {
+          {(resolvedUserDataResponse: UserDataResponse) => {
             return (
               <>
                 <section className="flex flex-col w-full pt-10">
@@ -362,7 +410,7 @@ const Profile = () => {
                             <img
                               id={`${post.id}`}
                               src={
-                                likes.includes(post.id)
+                                userlikes.includes(post.id)
                                   ? likeIconFilled
                                   : likeIcon
                               }
