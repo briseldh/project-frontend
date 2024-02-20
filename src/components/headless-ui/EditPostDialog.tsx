@@ -10,6 +10,7 @@ import editIcon from "../../assets/icons/pen-solid.svg";
 
 // Types and Styles
 import { File, Post } from "../../types/loaderTypes";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Props = {
   post: Post;
@@ -22,6 +23,8 @@ type FormValues = {
 };
 
 export default function EditPostDialog({ post, uploads }: Props) {
+  const queryClient = useQueryClient();
+
   let [isOpen, setIsOpen] = useState(false);
 
   const navigate = useNavigate();
@@ -48,6 +51,9 @@ export default function EditPostDialog({ post, uploads }: Props) {
     try {
       await http.get("/sanctum/csrf-cookie");
       await http.patch(`/api/post/update/${e?.target.id}`, data);
+      await queryClient.invalidateQueries({ queryKey: ["userDataResponse"] });
+      console.log("Post edit done");
+      closeModal();
 
       // navigate("/profile");
     } catch (exception: any) {
@@ -64,7 +70,7 @@ export default function EditPostDialog({ post, uploads }: Props) {
 
   return (
     <>
-      <div className="flex items-center gap-2 text-gray-200 cursor-pointer hover:underline">
+      <div className="flex items-center gap-2 px-2 py-1 text-gray-200 cursor-pointer hover:underline">
         <img src={editIcon} alt="edit-icon" className="w-4 h-4 " />
         <h4 onClick={openModal}>Edit Post</h4>
       </div>
@@ -133,10 +139,10 @@ export default function EditPostDialog({ post, uploads }: Props) {
                         type="text"
                         id="title"
                         {...register("title", {
-                          // required: {
-                          //   value: true,
-                          //   message: "Please enter a title for this post",
-                          // },
+                          required: {
+                            value: true,
+                            message: "Please enter a title for this post",
+                          },
                         })}
                       />
                       <p className="text-red-600">{errors.title?.message}</p>
@@ -147,8 +153,15 @@ export default function EditPostDialog({ post, uploads }: Props) {
                         className="w-full p-2 border-2 border-gray-300 rounded "
                         // value={post.text}
                         placeholder="Post Discription ..."
-                        {...register("text", {})}
+                        {...register("text", {
+                          required: {
+                            value: true,
+                            message:
+                              "Please enter a description about the post",
+                          },
+                        })}
                       ></textarea>
+                      <p className="text-red-500">{errors.text?.message}</p>
                     </div>
 
                     <div className="flex self-center justify-center gap-2 mt-4">
@@ -166,6 +179,7 @@ export default function EditPostDialog({ post, uploads }: Props) {
                           width={"32"}
                           color="#6464C8"
                           strokeWidth={"4"}
+                          secondaryColor="#6464C8"
                         />
                       ) : null}
                     </div>

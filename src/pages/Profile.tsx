@@ -1,67 +1,66 @@
-import { useEffect, useState, Suspense, useContext } from "react";
-import http from "../utils/http";
-import { useLoaderData, defer, Await } from "react-router-dom";
+import { useEffect, useState, useContext } from "react";
 import EditProfileDialog from "../components/headless-ui/EditProfileDialog";
-import EditPostDialog from "../components/headless-ui/EditPostDialog";
-import NewComment from "../components/forms/NewComment";
 import { Oval } from "react-loader-spinner";
 import { AuthContext } from "../context/AuthProvider";
 
-import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 //Image and Icons
 import profile from "../assets/imgs/149071.png";
-import commentIcon from "../assets/icons/comment-regular.svg";
-import likeIcon from "../assets/icons/thumbs-up-regular.svg";
-import xMarkBlack from "../assets/icons/xmark-solid-black.svg";
-import likeIconFilled from "../assets/icons/thumbs-up-solid.svg";
-import threePointsMenu from "../assets/icons/ellipsis-solid.svg";
-import deleteIcon from "../assets/icons/trash-solid.svg";
 
 //Types and styles
 import {
   Comments,
   Post,
   File,
-  ProfileLoaderData,
   UserDataResponse,
   ProfilePic,
   LikesResponse,
   Likes,
   UserData,
 } from "../types/loaderTypes";
-import {
-  threePointsMenuClose,
-  threePointsMenuOpen,
-} from "../styles/profilePage";
-import { allStyles } from "../styles/allStyles";
+import PostView from "../components/posti-view/PostView";
 
 const Profile = () => {
   const { auth } = useContext(AuthContext);
   const queryClient = useQueryClient();
-  const data = useLoaderData() as ProfileLoaderData;
-  const { userDataResponse, likesResponse } = data;
 
-  // const initialData = useLoaderData()
+  const { data: queryData, isLoading: dataIsLoading } =
+    useQuery<UserDataResponse>({
+      queryKey: ["userDataResponse"],
+      queryFn: async () => {
+        //*IMPORTANT* : If the route you want to fetch is private, meaning that you have to be authenticated to access it, then you need to send the credentials too. --> credentials: "include"
+        const res = await fetch("http://localhost:80/api/getUserData", {
+          credentials: "include",
+        });
 
-  const { data: queryData } = useQuery<UserDataResponse>({
-    queryKey: ["userDataResponse"],
-    queryFn: async () => {
-      //*IMPORTANT* : If the route you want to fetch is private, meaning that you have to be authenticated to access it, then you need to send the credentials too. --> credentials: "include"
+        if (!res.ok) {
+          console.log("Failed to fetch data");
+          throw new Error(`HTTP Error: ${res.status}`);
+        }
 
-      const res = await fetch("http://localhost:80/api/getUserData", {
-        credentials: "include",
-      });
+        return res.json();
+      },
+      staleTime: 1000,
+    });
 
-      if (!res.ok) {
-        console.log("Failed to fetch data");
-        throw new Error(`HTTP Error: ${res.status}`);
-      }
+  const { data: queryLikes, isLoading: likesIsLoading } =
+    useQuery<LikesResponse>({
+      queryKey: ["userLikesResponse"],
+      queryFn: async () => {
+        const res = await fetch("http://localhost:80/api/like/getUserLikes", {
+          credentials: "include",
+        });
 
-      return res.json();
-    },
-    staleTime: 1000,
-  });
+        if (!res.ok) {
+          console.log("Failed to fetch data");
+          throw new Error(`HTTP Error: ${res.status}`);
+        }
+
+        return res.json();
+      },
+      staleTime: 1000,
+    });
 
   const [userData, setUserData] = useState<UserData>();
   const [posts, setPosts] = useState<Post[]>();
@@ -70,51 +69,32 @@ const Profile = () => {
   const [profilePic, setProfilePic] = useState<ProfilePic>();
   const [userlikes, setUserLikes] = useState<number[]>([]);
   const [allLikes, setAllLikes] = useState<Likes[]>();
-  const [styles] = useState(allStyles);
-  const [commentsOpen, setCommentsOpen] = useState<number[]>([]);
-  const [pointsMenuOpen, setPointsMenuOpen] = useState<number[]>([]);
 
   useEffect(() => {
-    //Checking if the userData state is null so that i know when to run the effect.
-    //This Effect will only run when the component mounts for the first time and never again.
-    if (userData) {
-      console.log("This effect can only be called once.");
+    if (!queryData) {
+      console.log("The userDataResponse query doesent exist");
       return;
     }
-
-    // Use the .then() method to handle the resolved data
-    userDataResponse
-      .then((resolvedData: UserDataResponse) => {
-        // Inside the .then() callback, update the state with the resolved data
-        console.log(resolvedData);
-
-        setUserData(resolvedData.userData);
-        setPosts(resolvedData.userData.posts);
-        setComments(resolvedData.userData.comments);
-        setUploads(resolvedData.userUploads);
-        setProfilePic(resolvedData.userData.profile_pic);
-      })
-      .catch((error: any) => {
-        // Handle errors if necessary
-        console.error("Error fetching data:", error);
-      });
-  }, []);
+    //This effect will be called everytime when the query refetches.
+    //It is meant to keep the latest data shown to the user everyrime something happens.
+    queryClient.invalidateQueries({ queryKey: ["userDataResponse"] });
+    setUserData(queryData.userData);
+    setPosts(queryData.userData.posts);
+    setComments(queryData.userData.comments);
+    setUploads(queryData.userUploads);
+    setProfilePic(queryData.userData.profile_pic);
+  }, [queryData]);
 
   useEffect(() => {
-    // Use the .then() method to handle the resolved data
-    likesResponse
-      .then((resolvedData: LikesResponse) => {
-        // Inside the .then() callback, update the state with the resolved data
-        setAllLikes(resolvedData.allLikes);
+    if (!queryLikes) {
+      console.log("The likesResponseQuery doesent exist");
+      return;
+    }
+    setAllLikes(queryLikes.allLikes);
 
-        const likeIds = resolvedData.likes.map((like) => like.post_id);
-        setUserLikes(likeIds);
-      })
-      .catch((error: any) => {
-        // Handle errors if necessary
-        console.error("Error fetching data:", error);
-      });
-  }, []);
+    const likeIds = queryLikes.likes.map((like: Likes) => like.post_id);
+    setUserLikes(likeIds);
+  }, [queryLikes]);
 
   useEffect(() => {
     //Checking if the allLikes state is an array before mapping. If I don't check that than I get a TS error.
@@ -127,453 +107,118 @@ const Profile = () => {
     return () => {};
   }, []);
 
-  useEffect(() => {
-    if (!queryData) {
-      // console.log("The userDataResponse query doesent exist");
-      return;
-    }
-
-    //This effect will be called everytime when the query refetches.
-    //It is meant to keep the latest data shown to the user everyrime something happens.
-    queryClient.invalidateQueries({ queryKey: ["userDataResponse"] });
-    setUserData(queryData.userData);
-    setPosts(queryData.userData.posts);
-    setComments(queryData.userData.comments);
-    setUploads(queryData.userUploads);
-    setProfilePic(queryData.userData.profile_pic);
-  }, [queryData]);
-
   // Handling functions
-  const handlePointsMenuClick = (
-    e: React.MouseEvent<HTMLImageElement, MouseEvent>
-  ) => {
-    const postId = Number(e.currentTarget.id);
-
-    if (!pointsMenuOpen.includes(postId)) {
-      setPointsMenuOpen((prevValue) => {
-        return [...prevValue, postId];
-      });
-    } else {
-      setPointsMenuOpen((prevValue) => {
-        const likeIdx = prevValue.indexOf(postId);
-        prevValue.splice(likeIdx, 1);
-        return [...prevValue];
-      });
-    }
-  };
-  const handleDeletePostClick = async (
-    e: React.MouseEvent<HTMLHeadingElement, MouseEvent>
-  ) => {
-    const postId = Number(e.currentTarget.id);
-
-    try {
-      await http.get("/sanctum/csrf-cookie");
-      await http.delete(`/api/post/delete/${postId}`);
-
-      //This query invalidation is called when the user deletes the post so that the effect that runs depending on queryData happens.
-      await queryClient.invalidateQueries({ queryKey: ["userDataResponse"] });
-      console.log("Deleted Successfully");
-    } catch (exception) {
-      console.log(exception);
-    }
-  };
-
-  const handleLikeClick = async (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>
-  ) => {
-    const postId = Number(e.currentTarget.id);
-
-    if (!userlikes.includes(postId)) {
-      try {
-        setUserLikes((prevUserLikes) => {
-          return [...prevUserLikes, postId];
-        });
-
-        await http.get("/sanctum/csrf-cookie");
-        await http.post(`api/like/${postId}`);
-        queryClient.invalidateQueries({ queryKey: ["userDataResponse"] });
-      } catch (exception) {
-        console.log(exception);
-      }
-    } else {
-      try {
-        setUserLikes((prevUserLikes) => {
-          const newUserLikes = prevUserLikes.filter(
-            (likeId) => likeId !== postId
-          );
-          console.log(newUserLikes);
-          return newUserLikes;
-        });
-
-        await http.get("/sanctum/csrf-cookie");
-        await http.post(`api/dislike/${postId}`);
-        queryClient.invalidateQueries({ queryKey: ["userDataResponse"] });
-      } catch (exception) {
-        console.log(exception);
-      }
-    }
-  };
-
-  const handleViewAllCommentsClick = (
-    e: React.MouseEvent<HTMLParagraphElement, MouseEvent>
-  ) => {
-    const postId = Number(e.currentTarget.id);
-
-    setCommentsOpen((prevValue) => {
-      if (prevValue.includes(postId)) {
-        return [...prevValue];
-      } else {
-        return [...prevValue, postId];
-      }
-    });
-  };
-  const handleCloseCommentsClick = (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>
-  ) => {
-    const postId = Number(e.currentTarget.id);
-
-    setCommentsOpen((prevValue) => {
-      const likeIdx = prevValue.indexOf(postId);
-      prevValue.splice(likeIdx, 1);
-      return [...prevValue];
-    });
-  };
 
   const baseUrl = "http://localhost:80";
 
+  if (likesIsLoading && dataIsLoading) {
+    return (
+      <div className="absolute z-20 -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
+        <Oval height="60" width="60" color="#6464C8" secondaryColor="#6464C8" />
+      </div>
+    );
+  }
+
   return (
     <>
-      <Suspense
-        fallback={
-          <div className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
-            <Oval
-              height="60"
-              width="60"
-              color="#6464C8"
-              secondaryColor="#6464C8"
-            />
+      <section className="flex flex-col w-full pt-10">
+        <div className="bg-gray-500 w-full h-[150px] absolute rounded-b-2xl"></div>
+
+        <section className="flex flex-col items-center w-full px-6 bg-gray-300 pb-7 md:flex-row md:justify-between lg:justify-start">
+          <div className="z-10 w-1/2 pt-16 xs:w-2/5 sm:w-1/3 md:w-1/4 lg:w-[230px]">
+            {profilePic ? (
+              <img
+                src={`${baseUrl}/${profilePic.path}`}
+                alt="profile-pic"
+                className="rounded-full"
+              />
+            ) : (
+              <img src={profile} alt="profile-pic" />
+            )}
           </div>
-        }
-      >
-        <Await
-          resolve={userDataResponse}
-          errorElement={
-            <p className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
-              Error Loading ProfilePage!
-            </p>
-          }
-        >
-          {(resolvedUserDataResponse: UserDataResponse) => {
-            return (
-              <>
-                <section className="flex flex-col w-full pt-10">
-                  <div className="bg-gray-500 w-full h-[150px] absolute rounded-b-2xl"></div>
 
-                  <section className="flex flex-col items-center w-full px-6 bg-gray-300 pb-7 md:flex-row md:justify-between lg:justify-start">
-                    <div className="z-10 w-1/2 pt-16 xs:w-2/5 sm:w-1/3 md:w-1/4 lg:w-[230px]">
-                      {profilePic ? (
-                        <img
-                          src={`${baseUrl}/${profilePic.path}`}
-                          alt="profile-pic"
-                          className="rounded-full"
-                        />
-                      ) : (
-                        <img src={profile} alt="profile-pic" />
-                      )}
-                    </div>
+          <div className="flex flex-col items-center w-1/2 gap-2 pt-2 md:h-full md:w-4/5 md:pt-40 md:flex-row md:justify-between md:pl-5 ">
+            <h1 className="z-10 text-2xl font-semibold md:text-3xl md:font-bold">
+              {userData?.name}
+            </h1>
 
-                    <div className="flex flex-col items-center w-1/2 gap-2 pt-2 md:h-full md:w-4/5 md:pt-40 md:flex-row md:justify-between md:pl-5 ">
-                      <h1 className="z-10 text-2xl font-semibold md:text-3xl md:font-bold">
-                        {userData?.name}
-                      </h1>
+            <EditProfileDialog profilePic={profilePic} />
+          </div>
+        </section>
+      </section>
 
-                      <EditProfileDialog profilePic={profilePic} />
-                    </div>
-                  </section>
-                </section>
-
-                {posts?.map((post) => {
-                  //Filtering through all comments so that i can check the length of the comments for a particular post.
-                  const postComments = comments?.filter(
-                    (comment) => comment.post_id === post.id
-                  );
-
-                  //Filtering through all likes so that i can check how many likes a particular post has.
-                  const postLikes = allLikes?.filter(
-                    (like) => like.post_id === post.id
-                  );
-
-                  return (
-                    <section
-                      id="post-section"
-                      key={post.id}
-                      className={
-                        commentsOpen.includes(post.id)
-                          ? styles.postSection.commentsOpenStyles.postSection
-                          : styles.postSection.commentsCloseStyles.postSection
-                      }
-                    >
-                      <div
-                        id="close-comments-xmark"
-                        onClick={(e) => handleCloseCommentsClick(e)}
-                        className={
-                          commentsOpen.includes(post.id)
-                            ? styles.postSection.commentsOpenStyles
-                                .closeCommentsXmark
-                            : styles.postSection.commentsCloseStyles
-                                .closeCommentsXmark
-                        }
-                      >
-                        <img
-                          src={xMarkBlack}
-                          alt="x-mark"
-                          className="w-6 h-6 cursor-pointer"
-                        />
-                      </div>
-
-                      <div
-                        id="post-wrapper"
-                        className={
-                          commentsOpen.includes(post.id)
-                            ? styles.postSection.commentsOpenStyles.postWrapper
-                            : styles.postSection.commentsCloseStyles.postWrapper
-                        }
-                      >
-                        <div className="relative flex items-center justify-between">
-                          <div>
-                            <h1 className="px-4 pt-2 text-lg font-semibold">
-                              {post.title}
-                            </h1>
-                            <p className="px-4 pb-2 text-gray-800">
-                              {post.text}
-                            </p>
-                          </div>
-
-                          <img
-                            id={`${post.id}`}
-                            onClick={(e) => handlePointsMenuClick(e)}
-                            src={threePointsMenu}
-                            alt="three-point-menu"
-                            className="w-5 h-5 mx-4 cursor-pointer"
-                          />
-
-                          {/* Delete and Edit Post */}
-                          <div
-                            className={
-                              pointsMenuOpen.includes(post.id)
-                                ? threePointsMenuOpen
-                                : threePointsMenuClose
-                            }
-                          >
-                            <EditPostDialog post={post} uploads={uploads!} />
-
-                            <div className="flex items-center gap-2 text-gray-200 cursor-pointer hover:underline">
-                              <img
-                                src={deleteIcon}
-                                alt="delete-icon"
-                                className="w-4 h-4 "
-                              />
-                              <h4
-                                id={`${post.id}`}
-                                onClick={(e) => {
-                                  handleDeletePostClick(e);
-                                }}
-                              >
-                                Delete Post
-                              </h4>
-                            </div>
-                          </div>
-                        </div>
-
-                        {uploads?.map((upload) => {
-                          if (post.id !== Number(upload.post_id)) return;
-
-                          return (
-                            <div key={upload.id} className="xs:w-full">
-                              <img
-                                src={`${baseUrl}/${upload.path}`}
-                                alt={upload.alt_text}
-                                className="xs:w-full "
-                              />
-                            </div>
-                          );
-                        })}
-
-                        <div className="flex self-center justify-between py-1 border-gray-100 px-11 border-y xs:px-16 xs:py-2 sm:px-24">
-                          <div
-                            onClick={(e) => {
-                              handleLikeClick(e);
-                            }}
-                            id={`${post.id}`}
-                            className="flex items-center gap-1 cursor-pointer"
-                          >
-                            <img
-                              id={`${post.id}`}
-                              src={
-                                userlikes.includes(post.id)
-                                  ? likeIconFilled
-                                  : likeIcon
-                              }
-                              alt="like-icon"
-                              className="w-5 h-5"
-                            />
-
-                            <p>Like</p>
-
-                            <p>{postLikes?.length}</p>
-                          </div>
-
-                          <div
-                            id={`${post.id}`}
-                            onClick={(e) => handleViewAllCommentsClick(e)}
-                            className="flex items-center gap-1 cursor-pointer"
-                          >
-                            <img
-                              src={commentIcon}
-                              alt="comment-icon"
-                              className="w-5 h-5"
-                            />
-                            <p>Comment</p>
-                          </div>
-                        </div>
-
-                        {/* All comments wrapper */}
-                        <div
-                          id="comments-wrapper"
-                          className={
-                            commentsOpen.includes(post.id)
-                              ? styles.postSection.commentsOpenStyles
-                                  .commentsWrapper
-                              : styles.postSection.commentsCloseStyles
-                                  .commentsWrapper
-                          }
-                        >
-                          {postComments && postComments.length > 2 ? (
-                            <p
-                              id={`${post.id}`}
-                              onClick={(e) => handleViewAllCommentsClick(e)}
-                              className={
-                                commentsOpen.includes(post.id)
-                                  ? styles.postSection.commentsOpenStyles
-                                      .viewAllCommentsLink
-                                  : styles.postSection.commentsCloseStyles
-                                      .viewAllCommentsLink
-                              }
-                            >
-                              View all comments
-                            </p>
-                          ) : null}
-
-                          {comments?.map((comment) => {
-                            if (post.id !== comment.post_id) return;
-
-                            return (
-                              <div
-                                key={comment.id}
-                                className="flex flex-col gap-4 p-4"
-                              >
-                                <div className="flex gap-2">
-                                  <img
-                                    src={profile}
-                                    alt="commenter-profile-pic"
-                                    className="w-10 h-10"
-                                  />
-                                  <div className="p-2 bg-gray-200 rounded-xl">
-                                    <h3 className="font-medium">John Doe</h3>
-                                    <p className="text-gray-800">
-                                      {comment.text}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-
-                        {/* Write New Comment Wrapper */}
-                        <div
-                          id="write-new-comment"
-                          className={
-                            commentsOpen.includes(post.id)
-                              ? styles.postSection.commentsOpenStyles
-                                  .writeNewComment
-                              : styles.postSection.commentsCloseStyles
-                                  .writeNewComment
-                          }
-                        >
-                          <NewComment postId={post.id} />
-                        </div>
-                      </div>
-                    </section>
-                  );
-                })}
-              </>
-            );
-          }}
-        </Await>
-      </Suspense>
+      <PostView
+        posts={posts!}
+        comments={comments!}
+        allLikes={allLikes!}
+        uploads={uploads!}
+        queryLikes={queryLikes!}
+      />
     </>
   );
 };
 
 export default Profile;
 
-type ProfileLoaderProps = {
-  request: {
-    signal: AbortSignal;
-  };
-};
+// type ProfileLoaderProps = {
+//   request: {
+//     signal: AbortSignal;
+//   };
+// };
 
 // ==========Profile Loader with REACT QUERY =================//
-export const ProfileLoader =
-  // Pass the queryClient also in App.tsx !!
+// export const ProfileLoader =
+//   // Pass the queryClient also in App.tsx !!
 
+//     (queryClient: QueryClient) =>
+//     async ({ request }: ProfileLoaderProps) => {
+//       // Define the query
+//       const userDataQuery = {
+//         queryKey: ["userDataResponse"],
+//         queryFn: async () => {
+//           //*IMPORTANT* : If the route you want to fetch is private, meaning that you have to be authenticated to access it, then you need to send the credentials too. --> credentials: "include"
 
-    (queryClient: QueryClient) =>
-    async ({ request }: ProfileLoaderProps) => {
-      // Define the query
-      const userDataQuery = {
-        queryKey: ["userDataResponse"],
-        queryFn: async () => {
-          //*IMPORTANT* : If the route you want to fetch is private, meaning that you have to be authenticated to access it, then you need to send the credentials too. --> credentials: "include"
+//           const res = await fetch("http://localhost:80/api/getUserData", {
+//             credentials: "include",
+//           });
 
-          const res = await fetch("http://localhost:80/api/getUserData", {
-            credentials: "include",
-          });
+//           if (!res.ok) {
+//             console.log("Failed to fetch data");
+//             throw new Error(`HTTP Error: ${res.status}`);
+//           }
 
-          if (!res.ok) {
-            console.log("Failed to fetch data");
-            throw new Error(`HTTP Error: ${res.status}`);
-          }
+//           return res.json();
+//         },
+//         staleTime: 1000,
+//       };
 
-          return res.json();
-        },
-        staleTime: 1000,
-      };
+//       // Define the query
+//       const userLikesQuery = {
+//         queryKey: ["userLikesResponse"],
+//         queryFn: async () => {
+//           const res = await fetch("http://localhost:80/api/like/getUserLikes", {
+//             credentials: "include",
+//           });
 
-      // Define the query
-      const userLikesQuery = {
-        queryKey: ["userLikesResponse"],
-        queryFn: async () => {
-          const res = await fetch("http://localhost:80/api/like/getUserLikes", {
-            credentials: "include",
-          });
+//           if (!res.ok) {
+//             console.log("Failed to fetch data");
+//             throw new Error(`HTTP Error: ${res.status}`);
+//           }
 
-          if (!res.ok) {
-            console.log("Failed to fetch data");
-            throw new Error(`HTTP Error: ${res.status}`);
-          }
+//           return res.json();
+//         },
+//         staleTime: 1000,
+//       };
 
-          return res.json();
-        },
-        staleTime: 1000,
-      };
+//       // Trigger the execution of the queries using fetchQuery
+//       // await queryClient.fetchQuery(userDataQuery);
+//       // await queryClient.fetchQuery(userLikesQuery);
 
-      return defer({
-        userDataResponse: queryClient.ensureQueryData(userDataQuery),
-        likesResponse: queryClient.ensureQueryData(userLikesQuery),
-      });
-    };
+//       return defer({
+//         userDataResponse: queryClient.ensureQueryData(userDataQuery),
+//         likesResponse: queryClient.ensureQueryData(userLikesQuery),
+//       });
+//     };
 //============================================================================================================================//
 
 // ==========Profile Loader with axios ( It doesen't work when using defer, Await and Suspense in your React Components, because it returns a resolved Promise and not the Promise)=================//

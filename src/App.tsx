@@ -5,8 +5,6 @@ import {
   RouterProvider,
   Route,
 } from "react-router-dom";
-import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 // Layouts
 import RootLayout from "./layouts/RootLayout";
@@ -18,7 +16,7 @@ import RootError from "./errors/RootError";
 // Pages
 // import Login from "./pages/Login";
 const Login = lazy(() => import("./pages/Login"));
-import Home, { HomeLoader } from "./pages/Home";
+import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
 import CreatePost from "./pages/CreatePost";
@@ -26,10 +24,7 @@ import CreatePost from "./pages/CreatePost";
 // const profileLoader = lazy(() => import("./pages/Profile"));
 // import { profileLoader } from "./pages/Profile";
 import { Oval } from "react-loader-spinner";
-import Profile, { ProfileLoader } from "./pages/Profile";
-
-const homeQueryClient = new QueryClient();
-const profileQueryClient = new QueryClient();
+import Profile from "./pages/Profile";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -41,7 +36,7 @@ const router = createBrowserRouter(
           <Route
             index
             element={<Home />}
-            loader={HomeLoader(homeQueryClient)}
+            // loader={HomeLoader(homeQueryClient)}
           />
 
           <Route
@@ -72,7 +67,7 @@ const router = createBrowserRouter(
             <Route
               path="profile"
               element={<Profile />}
-              loader={ProfileLoader(profileQueryClient)}
+              // loader={ProfileLoader(profileQueryClient)}
             />
           </Route>
         </Route>

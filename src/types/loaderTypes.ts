@@ -59,6 +59,7 @@ export type Comments = {
     post_id: number;
     text: string;
     updated_at: string;
+    user?: UserData
     user_id: number;
 }
 

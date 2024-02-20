@@ -28,8 +28,6 @@ const Login = () => {
     formState: { errors, isSubmitting },
   } = form;
 
-  console.log(auth);
-
   // This function is called when the fields are correctly validated
   const onSubmit = async (data: LoginFormValues) => {
     //Logic for login
@@ -92,8 +90,6 @@ const Login = () => {
           setError(fieldName as FieldName, RootError[0]);
         }
       }
-
-      // console.log(errors);
     }
   };
 
@@ -165,6 +161,7 @@ const Login = () => {
                 width={"32"}
                 color="#6464C8"
                 strokeWidth={"4"}
+                secondaryColor="#6464C8"
               />
             ) : null}
           </div>

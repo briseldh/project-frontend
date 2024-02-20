@@ -1,8 +1,5 @@
 import { SubmitHandler, useForm } from "react-hook-form";
 
-// Icons and Images
-import sendComment from "../../assets/icons/send-comment.svg";
-
 // Types and Styles
 import { CommentFormValues } from "../../types/formTypes";
 import Button from "../Button";
@@ -48,10 +45,6 @@ const NewComment = ({ postId }: Props) => {
         id="comment"
         {...register("text", {})}
       />
-
-      {/* <div onClick={} className="pt-2">
-        <img src={sendComment} alt="send-comment-icon" className="w-6 h-6" />
-      </div> */}
 
       <Button
         styles={
