@@ -1,5 +1,5 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import http from "../../utils/http";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Oval } from "react-loader-spinner";
@@ -27,6 +27,11 @@ export default function EditPostDialog({ post, uploads }: Props) {
 
   let [isOpen, setIsOpen] = useState(false);
 
+  useEffect(() => {
+    setValue("title", post.title);
+    setValue("text", post.text);
+  }, []);
+
   const navigate = useNavigate();
 
   function closeModal() {
@@ -41,6 +46,7 @@ export default function EditPostDialog({ post, uploads }: Props) {
   const form = useForm<FormValues>();
   const {
     register,
+    setValue,
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
@@ -70,7 +76,7 @@ export default function EditPostDialog({ post, uploads }: Props) {
 
   return (
     <>
-      <div className="flex items-center gap-2 px-2 py-1 text-gray-200 cursor-pointer hover:underline">
+      <div className="flex items-center gap-2 px-2 py-1 text-gray-200 rounded-md cursor-pointer hover:bg-black/10">
         <img src={editIcon} alt="edit-icon" className="w-4 h-4 " />
         <h4 onClick={openModal}>Edit Post</h4>
       </div>

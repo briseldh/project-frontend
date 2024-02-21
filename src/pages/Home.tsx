@@ -4,24 +4,27 @@ import { Oval } from "react-loader-spinner";
 import { useQuery } from "@tanstack/react-query";
 
 //Types and styles
-import { Comments, Likes, Post } from "../types/loaderTypes";
+import { Comments, Likes, Post, PostsResponse } from "../types/loaderTypes";
 import PostView from "../components/posti-view/PostView";
 
 const Home = () => {
-  const { data: postsQuery, isLoading: postsAreLoading } = useQuery({
-    queryKey: ["postsResponse"],
-    queryFn: async () => {
-      const res = await fetch("http://localhost:80/api/post/getAll");
+  const { data: postsQuery, isLoading: postsAreLoading } =
+    useQuery<PostsResponse>({
+      queryKey: ["postsResponse"],
+      queryFn: async () => {
+        const res = await fetch("http://localhost:80/api/post/getAll");
 
-      if (!res.ok) {
-        console.log("Failed to fetch data");
-        throw new Error(`HTTP Error: ${res.status}`);
-      }
+        if (!res.ok) {
+          console.log("Failed to fetch data");
+          throw new Error(`HTTP Error: ${res.status}`);
+        }
 
-      return res.json();
-    },
-    staleTime: 1000,
-  });
+        return res.json();
+      },
+      staleTime: 1000,
+    });
+
+  console.log(postsQuery);
 
   const [posts, setPosts] = useState<Post[]>();
   const [comments, setComments] = useState<Comments[]>();
@@ -59,7 +62,12 @@ const Home = () => {
 
   return (
     <section className="pt-16 bg-gray-400">
-      <PostView posts={posts!} comments={comments!} allLikes={allLikes!} />
+      <PostView
+        isShownIn="home"
+        posts={posts!}
+        comments={comments!}
+        allProfilePics={postsQuery!.allProfilePics}
+      />
     </section>
   );
 };

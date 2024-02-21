@@ -16,12 +16,15 @@ export type UserDataResponse = {
     message: string;
     userData: UserData;
     userUploads: File[];
+    comments: Comments[];
+    allProfilePics: ProfilePic[];
 }
 
 export type PostsResponse = {
     posts: Post[];
     comments: Comments[];
     allLikes: Likes[];
+    allProfilePics: ProfilePic[];
 }
 
 export type LikesResponse = {

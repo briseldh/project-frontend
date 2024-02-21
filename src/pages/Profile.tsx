@@ -15,8 +15,6 @@ import {
   File,
   UserDataResponse,
   ProfilePic,
-  LikesResponse,
-  Likes,
   UserData,
 } from "../types/loaderTypes";
 import PostView from "../components/posti-view/PostView";
@@ -44,31 +42,13 @@ const Profile = () => {
       staleTime: 1000,
     });
 
-  const { data: queryLikes, isLoading: likesIsLoading } =
-    useQuery<LikesResponse>({
-      queryKey: ["userLikesResponse"],
-      queryFn: async () => {
-        const res = await fetch("http://localhost:80/api/like/getUserLikes", {
-          credentials: "include",
-        });
-
-        if (!res.ok) {
-          console.log("Failed to fetch data");
-          throw new Error(`HTTP Error: ${res.status}`);
-        }
-
-        return res.json();
-      },
-      staleTime: 1000,
-    });
+  console.log(queryData);
 
   const [userData, setUserData] = useState<UserData>();
   const [posts, setPosts] = useState<Post[]>();
   const [comments, setComments] = useState<Comments[]>();
   const [uploads, setUploads] = useState<File[]>();
   const [profilePic, setProfilePic] = useState<ProfilePic>();
-  const [userlikes, setUserLikes] = useState<number[]>([]);
-  const [allLikes, setAllLikes] = useState<Likes[]>();
 
   useEffect(() => {
     if (!queryData) {
@@ -77,41 +57,18 @@ const Profile = () => {
     }
     //This effect will be called everytime when the query refetches.
     //It is meant to keep the latest data shown to the user everyrime something happens.
-    queryClient.invalidateQueries({ queryKey: ["userDataResponse"] });
     setUserData(queryData.userData);
     setPosts(queryData.userData.posts);
-    setComments(queryData.userData.comments);
+    setComments(queryData.comments);
     setUploads(queryData.userUploads);
     setProfilePic(queryData.userData.profile_pic);
   }, [queryData]);
-
-  useEffect(() => {
-    if (!queryLikes) {
-      console.log("The likesResponseQuery doesent exist");
-      return;
-    }
-    setAllLikes(queryLikes.allLikes);
-
-    const likeIds = queryLikes.likes.map((like: Likes) => like.post_id);
-    setUserLikes(likeIds);
-  }, [queryLikes]);
-
-  useEffect(() => {
-    //Checking if the allLikes state is an array before mapping. If I don't check that than I get a TS error.
-    if (Array.isArray(allLikes)) {
-      const userLikes = allLikes?.filter((like) => like.user_id === auth.id);
-      const likeIds = userLikes!.map((like) => like.post_id);
-      setUserLikes(likeIds);
-    }
-
-    return () => {};
-  }, []);
 
   // Handling functions
 
   const baseUrl = "http://localhost:80";
 
-  if (likesIsLoading && dataIsLoading) {
+  if (dataIsLoading) {
     return (
       <div className="absolute z-20 -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
         <Oval height="60" width="60" color="#6464C8" secondaryColor="#6464C8" />
@@ -148,11 +105,11 @@ const Profile = () => {
       </section>
 
       <PostView
+        isShownIn="profile"
         posts={posts!}
         comments={comments!}
-        allLikes={allLikes!}
         uploads={uploads!}
-        queryLikes={queryLikes!}
+        allProfilePics={queryData!.allProfilePics}
       />
     </>
   );

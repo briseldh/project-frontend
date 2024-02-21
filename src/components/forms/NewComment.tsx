@@ -4,16 +4,21 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { CommentFormValues } from "../../types/formTypes";
 import Button from "../Button";
 import http from "../../utils/http";
+import { useQueryClient } from "@tanstack/react-query";
+import { Oval } from "react-loader-spinner";
 
 type Props = {
   postId: number;
 };
 
 const NewComment = ({ postId }: Props) => {
+  const queryClient = useQueryClient();
+
   //======Write a new comment form===========//
   const form = useForm<CommentFormValues>();
   const {
     register,
+    resetField,
     handleSubmit,
     formState: { isSubmitting },
   } = form;
@@ -22,6 +27,9 @@ const NewComment = ({ postId }: Props) => {
     try {
       await http.get("/sanctum/csrf-cookie");
       await http.post(`/api/comment/insert/${e?.target.id}`, data);
+      await queryClient.invalidateQueries({ queryKey: ["userDataResponse"] });
+
+      resetField("text");
     } catch (exception: any) {
       console.log(exception);
     }
@@ -45,18 +53,29 @@ const NewComment = ({ postId }: Props) => {
         id="comment"
         {...register("text", {})}
       />
+      <div className="flex items-center gap-2">
+        <Button
+          styles={
+            !isSubmitting
+              ? "w-[30%]  p-1 text-white text-xs bg-blue-500 rounded drop-shadow-md"
+              : "w-[30%]  p-1 text-white text-xs bg-blue-400 rounded drop-shadow-md"
+          }
+          disabled={isSubmitting}
+          value="Submit"
+          type="submit"
+          onClick={() => null}
+        />
 
-      <Button
-        styles={
-          !isSubmitting
-            ? "w-[30%]  p-1 text-white text-xs bg-blue-500 rounded drop-shadow-md"
-            : "w-[30%]  p-1 text-white text-xs bg-blue-400 rounded drop-shadow-md"
-        }
-        disabled={isSubmitting}
-        value="Submit"
-        type="submit"
-        onClick={() => null}
-      />
+        {isSubmitting ? (
+          <Oval
+            height={"20"}
+            width={"20"}
+            color="#6464C8"
+            strokeWidth={"4"}
+            secondaryColor="#6464C8"
+          />
+        ) : null}
+      </div>
     </form>
   );
 };

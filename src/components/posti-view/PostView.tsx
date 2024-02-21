@@ -1,9 +1,10 @@
 import { useContext, useEffect, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AuthContext } from "../../context/AuthProvider";
 import http from "../../utils/http";
 import EditPostDialog from "../headless-ui/EditPostDialog";
 import SingleComment from "./SingleComment";
+import { Oval } from "react-loader-spinner";
 
 //Icons and Imgs
 import xMarkBlack from "../../assets/icons/xmark-solid-black.svg";
@@ -21,53 +22,106 @@ import {
   Likes,
   LikesResponse,
   Post,
+  ProfilePic,
+  UserData,
 } from "../../types/loaderTypes";
 import { allStyles } from "../../styles/allStyles";
 import {
   threePointsMenuClose,
   threePointsMenuOpen,
 } from "../../styles/profilePage";
+import ThreePointsMenu from "../headless-ui/ThreePointsMenu";
+import NewThreePtsMenu from "../headless-ui/NewThreePtsMenu";
 
 type Props = {
-  queryLikes?: LikesResponse;
   posts: Post[];
   comments: Comments[];
-  allLikes: Likes[];
   uploads?: File[];
+  allProfilePics: ProfilePic[];
+  isShownIn: "home" | "profile";
+};
+
+type PostLikesCount = {
+  [x: number]: number;
 };
 
 const PostView = ({
   posts,
   comments,
-  allLikes,
   uploads,
-  queryLikes,
+  allProfilePics,
+  isShownIn,
 }: Props) => {
   const { auth } = useContext(AuthContext);
   const queryClient = useQueryClient();
 
+  const { data: queryLikes, isLoading: likesIsLoading } =
+    useQuery<LikesResponse>({
+      queryKey: ["userLikesResponse"],
+      queryFn: async () => {
+        const res = await fetch("http://localhost:80/api/like/getUserLikes", {
+          credentials: "include",
+        });
+
+        if (!res.ok) {
+          console.log("Failed to fetch data");
+          throw new Error(`HTTP Error: ${res.status}`);
+        }
+
+        return res.json();
+      },
+      staleTime: 1000,
+    });
+
   const [commentsOpen, setCommentsOpen] = useState<number[]>([]);
-  // const [allLikes, setAllLikes] = useState<Likes[]>();
+  const [allLikes, setAllLikes] = useState<Likes[]>();
   const [userlikes, setUserLikes] = useState<number[]>([]);
   const [pointsMenuOpen, setPointsMenuOpen] = useState<number[]>([]);
   const [styles] = useState(allStyles);
+  const [postLikesCount, setPostLikesCount] = useState<PostLikesCount>();
 
   // Setting the User Likes effect
   useEffect(() => {
-    //Checking if the allLikes state is an array before mapping. If I don't check that than I get a TS error.
-    if (!allLikes) {
-      queryClient.invalidateQueries({ queryKey: ["userLikesResponse"] });
+    if (!queryLikes) {
+      console.log("The likesResponseQuery doesent exist");
+      return;
     }
+    setAllLikes(queryLikes.allLikes);
 
-    if (Array.isArray(allLikes)) {
-      console.log("ketu vjen");
-      const userLikes = allLikes?.filter((like) => like.user_id === auth.id);
-      const likeIds = userLikes!.map((like) => like.post_id);
-      setUserLikes(likeIds);
-    }
-    return () => {};
-  }, []);
+    const likeIds = queryLikes.likes.map((like: Likes) => like.post_id);
+    setUserLikes(likeIds);
 
+    //Setting the post likes count
+    posts
+      ? posts.map((post) => {
+          const postLikes = queryLikes.allLikes.filter(
+            (like) => like.post_id === post.id
+          );
+
+          setPostLikesCount((prevLikesCount) => {
+            return { ...prevLikesCount, [post.id]: postLikes.length };
+          });
+        })
+      : console.log("There is no posts yet");
+  }, [queryLikes]);
+
+  // useEffect(() => {
+  //   console.log("Re Render trigger");
+
+  //   posts
+  //     ? posts.map((post) => {
+  //         const postLikes = queryLikes?.allLikes.filter(
+  //           (like) => like.post_id === post.id
+  //         );
+
+  //         setPostLikesCount((prevLikesCount) => {
+  //           return { ...prevLikesCount, [post.id]: postLikes?.length };
+  //         });
+  //       })
+  //     : console.log("There is no posts yet");
+  // }, []);
+
+  console.log(postLikesCount);
   //Handling functions
   const handleCloseCommentsClick = (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>
@@ -92,6 +146,10 @@ const PostView = ({
           return [...prevUserLikes, postId];
         });
 
+        setPostLikesCount((prevCount) => {
+          return { ...prevCount, [postId]: prevCount![postId] + 1 };
+        });
+
         await http.get("/sanctum/csrf-cookie");
         await http.post(`api/like/${postId}`);
         queryClient.invalidateQueries({ queryKey: ["userDataResponse"] });
@@ -104,8 +162,11 @@ const PostView = ({
           const newUserLikes = prevUserLikes.filter(
             (likeId) => likeId !== postId
           );
-          console.log(newUserLikes);
           return newUserLikes;
+        });
+
+        setPostLikesCount((prevCount) => {
+          return { ...prevCount, [postId]: prevCount![postId] - 1 };
         });
 
         await http.get("/sanctum/csrf-cookie");
@@ -167,6 +228,14 @@ const PostView = ({
 
   const baseUrl = "http://localhost:80";
 
+  if (likesIsLoading) {
+    return (
+      <div className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
+        <Oval height="60" width="60" color="#6464C8" secondaryColor="#6464C8" />
+      </div>
+    );
+  }
+
   return (
     <>
       {posts?.map((post) => {
@@ -174,9 +243,6 @@ const PostView = ({
         const postComments = comments?.filter(
           (comment) => comment.post_id === post.id
         );
-
-        //Filtering through all likes so that i can check how many likes a particular post has.
-        const postLikes = allLikes?.filter((like) => like.post_id === post.id);
 
         return (
           <section
@@ -222,40 +288,11 @@ const PostView = ({
                   <p className="px-4 pb-2 text-gray-800">{post.text}</p>
                 </div>
 
-                <img
-                  id={`${post.id}`}
-                  onClick={(e) => handlePointsMenuClick(e)}
-                  src={threePointsMenu}
-                  alt="three-point-menu"
-                  className="w-5 h-5 mx-4 cursor-pointer"
-                />
-
-                {/* Delete and Edit Post */}
-                <div
-                  className={
-                    pointsMenuOpen.includes(post.id)
-                      ? threePointsMenuOpen
-                      : threePointsMenuClose
-                  }
-                >
-                  <EditPostDialog post={post} uploads={uploads!} />
-
-                  <div className="flex items-center gap-2 text-gray-200 cursor-pointer hover:underline">
-                    <img
-                      src={deleteIcon}
-                      alt="delete-icon"
-                      className="w-4 h-4 "
-                    />
-                    <h4
-                      id={`${post.id}`}
-                      onClick={(e) => {
-                        handleDeletePostClick(e);
-                      }}
-                    >
-                      Delete Post
-                    </h4>
-                  </div>
-                </div>
+                {isShownIn === "profile" ? (
+                  <>
+                    <ThreePointsMenu post={post} uploads={uploads!} />
+                  </>
+                ) : null}
               </div>
 
               {/* Img Container */}
@@ -303,7 +340,7 @@ const PostView = ({
 
                   <p>Like</p>
 
-                  <p>{postLikes?.length}</p>
+                  <p>{postLikesCount && postLikesCount[post.id]}</p>
                 </div>
 
                 <div
@@ -345,7 +382,11 @@ const PostView = ({
                   </p>
                 ) : null}
 
-                <SingleComment comments={comments!} post={post} />
+                <SingleComment
+                  comments={comments!}
+                  post={post}
+                  profilePics={allProfilePics}
+                />
               </div>
 
               {/* Write New Comment Wrapper */}
