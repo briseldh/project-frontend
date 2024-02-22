@@ -1,15 +1,19 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useState } from "react";
 import { ProfilePicFormValues } from "../../types/formTypes";
 import { useForm } from "react-hook-form";
 import http from "../../utils/http";
 import Button from "../Button";
+import { useQueryClient } from "@tanstack/react-query";
+import { Oval } from "react-loader-spinner";
 
 type Props = {
   profilePicId: number;
 };
 
 export default function EditProfilePicDialog({ profilePicId }: Props) {
+  const queryClient = useQueryClient();
+
   let [isOpen, setIsOpen] = useState(false);
 
   function closeModal() {
@@ -23,7 +27,6 @@ export default function EditProfilePicDialog({ profilePicId }: Props) {
   const form = useForm<ProfilePicFormValues>();
   const {
     register,
-    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = form;
@@ -37,19 +40,15 @@ export default function EditProfilePicDialog({ profilePicId }: Props) {
 
     try {
       await http.get("/sanctum/csrf-cookie");
-
-      const response = await http.post(
-        `/api/profilePic/update/${profilePicId}`,
-        allData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          method: "Patch",
-        }
-      );
-
-      console.log(response);
+      await http.post(`/api/profilePic/update/${profilePicId}`, allData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        method: "Patch",
+      });
+      await queryClient.invalidateQueries({ queryKey: ["userDataResponse"] });
+      console.log("Post edit done");
+      closeModal();
     } catch (exception: any) {
       console.log(exception);
     }
@@ -68,6 +67,7 @@ export default function EditProfilePicDialog({ profilePicId }: Props) {
       <div className="inset-0 flex items-center justify-center">
         <button
           type="button"
+          disabled={isSubmitting}
           onClick={openModal}
           className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75"
         >
@@ -123,13 +123,25 @@ export default function EditProfilePicDialog({ profilePicId }: Props) {
                       <p className="text-red-600">{errors.avatar?.message}</p>
                     </div>
 
-                    <Button
-                      styles=""
-                      disabled={isSubmitting}
-                      value="Change"
-                      type="submit"
-                      onClick={() => null}
-                    />
+                    <div className="flex items-center self-center justify-center gap-2 mt-4">
+                      <Button
+                        styles="inline-flex justify-center px-4 py-2 text-sm font-medium text-blue-900 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                        disabled={isSubmitting}
+                        value="Change"
+                        type="submit"
+                        onClick={() => null}
+                      />
+
+                      {isSubmitting ? (
+                        <Oval
+                          height={"28"}
+                          width={"28"}
+                          color="#6464C8"
+                          strokeWidth={"4"}
+                          secondaryColor="#6464C8"
+                        />
+                      ) : null}
+                    </div>
                   </form>
                 </Dialog.Panel>
               </Transition.Child>

@@ -18,7 +18,6 @@ const SingleComment = ({ comments, post, profilePics }: Props) => {
   const { auth } = useContext(AuthContext);
   const queryClient = useQueryClient();
 
-  // const [profilePic, setProfilePic] = useState<ProfilePic[]>(profilePics);
   const [isSending, setIsSending] = useState<number[]>([]);
 
   console.log(profilePics);
@@ -60,32 +59,40 @@ const SingleComment = ({ comments, post, profilePics }: Props) => {
         return (
           <div key={comment.id} className="flex flex-col gap-4 p-4">
             <div className="flex gap-2">
-              {profilePics
-                ? profilePics.map((profilePic) => {
-                    if (profilePic?.user_id !== comment.user_id)
-                      return (
-                        <img
-                          key={profilePic?.id}
-                          src={profile}
-                          alt="commenter-profile-pic"
-                          className="w-10 h-10"
-                        />
-                      );
-
+              {profilePics.length !== 0 ? (
+                profilePics.map((profilePic) => {
+                  if (profilePic?.user_id !== comment.user_id) {
                     return (
-                      <div
-                        key={profilePic.id}
-                        className="w-10 h-10 overflow-hidden rounded-full"
-                      >
-                        <img
-                          src={`${baseUrl}/${profilePic.path}`}
-                          alt="commenter-profile-pic"
-                          className="w-10 h-10"
-                        />
-                      </div>
+                      <img
+                        key={profilePic?.id}
+                        src={profile}
+                        alt="commenter-profile-pic"
+                        className="w-10 h-10"
+                      />
                     );
-                  })
-                : null}
+                  }
+
+                  return (
+                    <div
+                      key={profilePic.id}
+                      className="w-10 h-10 overflow-hidden rounded-full"
+                    >
+                      <img
+                        src={`${baseUrl}/${profilePic.path}`}
+                        alt="commenter-profile-pic"
+                        className="w-10 h-10"
+                      />
+                    </div>
+                  );
+                })
+              ) : (
+                <img
+                  src={profile}
+                  alt="commenter-profile-pic"
+                  className="w-10 h-10"
+                />
+              )}
+
               <div
                 className={
                   isSending.includes(comment.id)

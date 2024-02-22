@@ -4,10 +4,11 @@ import { ProfilePicFormValues } from "../../types/formTypes";
 import { useForm } from "react-hook-form";
 import http from "../../utils/http";
 import Button from "../Button";
-import { useRevalidator } from "react-router-dom";
+import { Oval } from "react-loader-spinner";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function EditProfilePicDialog() {
-  const { revalidate, state: loadingState } = useRevalidator();
+  const queryClient = useQueryClient();
 
   let [isOpen, setIsOpen] = useState(false);
 
@@ -22,7 +23,6 @@ export default function EditProfilePicDialog() {
   const form = useForm<ProfilePicFormValues>();
   const {
     register,
-    control,
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
@@ -37,15 +37,13 @@ export default function EditProfilePicDialog() {
 
     try {
       await http.get("/sanctum/csrf-cookie");
-
-      const response = await http.post("/api/profilePic/insert", allData, {
+      await http.post("/api/profilePic/insert", allData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-      console.log(response);
-
-      revalidate();
+      await queryClient.invalidateQueries({ queryKey: ["userDataResponse"] });
+      console.log("ProfilePic added successfuly");
     } catch (exception: any) {
       console.log(exception);
 
@@ -67,6 +65,7 @@ export default function EditProfilePicDialog() {
       <div className="inset-0 flex items-center justify-center">
         <button
           type="button"
+          disabled={isSubmitting}
           onClick={openModal}
           className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75"
         >
@@ -122,13 +121,25 @@ export default function EditProfilePicDialog() {
                       <p className="text-red-600">{errors.avatar?.message}</p>
                     </div>
 
-                    <Button
-                      styles=""
-                      disabled={isSubmitting}
-                      value="Add"
-                      type="submit"
-                      onClick={() => null}
-                    />
+                    <div className="flex items-center self-center justify-center gap-2 mt-4">
+                      <Button
+                        styles="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-500 border border-transparent rounded-md hover:bg-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                        disabled={isSubmitting}
+                        value="Add"
+                        type="submit"
+                        onClick={() => null}
+                      />
+
+                      {isSubmitting ? (
+                        <Oval
+                          height={"28"}
+                          width={"28"}
+                          color="#6464C8"
+                          strokeWidth={"4"}
+                          secondaryColor="#6464C8"
+                        />
+                      ) : null}
+                    </div>
                   </form>
                 </Dialog.Panel>
               </Transition.Child>

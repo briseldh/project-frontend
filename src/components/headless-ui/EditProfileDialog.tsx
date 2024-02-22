@@ -12,25 +12,30 @@ import XmarkBlack from "../../assets/icons/xmark-solid-black.svg";
 //Types and Styles
 import { ProfilePic } from "../../types/loaderTypes";
 import http from "../../utils/http";
+import { useQueryClient } from "@tanstack/react-query";
+import { Oval } from "react-loader-spinner";
 
 type Props = {
   profilePic: ProfilePic;
 };
 
 export default function EditProfileDialog({ profilePic }: Props) {
+  const queryClient = useQueryClient();
+
   let [isOpen, setIsOpen] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   //Handling Functions
   const hadleDeleteProfilePicClick = async () => {
     try {
+      setIsSending(true);
       await http.get("/sanctum/csrf-cookie");
-      const response = await http.delete(
-        `/api/profilePic/delete/${profilePic?.id}`
-      );
-
-      console.log(response);
+      await http.delete(`/api/profilePic/delete/${profilePic?.id}`);
+      await queryClient.invalidateQueries({ queryKey: ["userDataResponse"] });
     } catch (exception) {
       console.log(exception);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -105,22 +110,7 @@ export default function EditProfileDialog({ profilePic }: Props) {
 
                   <div>
                     <div className="flex flex-col items-center w-full py-6 gap-7">
-                      <div className="flex items-center justify-between w-full pr-2">
-                        <button
-                          type="button"
-                          onClick={hadleDeleteProfilePicClick}
-                          className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75"
-                        >
-                          Delete
-                        </button>
-
-                        {!profilePic ? (
-                          <AddProfilePicDialog />
-                        ) : (
-                          <EditProfilePicDialog profilePicId={profilePic.id} />
-                        )}
-                      </div>
-
+                      {/* Current profile Pic */}
                       <img
                         src={
                           profilePic ? `${baseUrl}/${profilePic.path}` : profile
@@ -128,6 +118,46 @@ export default function EditProfileDialog({ profilePic }: Props) {
                         alt="profile-pic"
                         className="rounded-full w-44 h-44"
                       />
+
+                      {/* Add, Edit and Delete buttons */}
+                      <div
+                        className={
+                          profilePic
+                            ? "flex items-center justify-between w-full pr-2"
+                            : "flex items-center justify-center w-full pr-2"
+                        }
+                      >
+                        {!profilePic ? (
+                          <AddProfilePicDialog />
+                        ) : (
+                          <>
+                            {isSending ? (
+                              <div className="py-2 bg-red-500 rounded-md px-7">
+                                <Oval
+                                  height={"20"}
+                                  width={"20"}
+                                  color="#fff"
+                                  strokeWidth={"4"}
+                                  secondaryColor="#fff"
+                                />
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                disabled={isSending}
+                                onClick={hadleDeleteProfilePicClick}
+                                className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75"
+                              >
+                                Delete
+                              </button>
+                            )}
+
+                            <EditProfilePicDialog
+                              profilePicId={profilePic.id}
+                            />
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
 

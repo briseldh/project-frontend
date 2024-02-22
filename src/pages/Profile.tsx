@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 //Image and Icons
 import profile from "../assets/imgs/149071.png";
+import camera from "../assets/icons/camera-solid.svg";
 
 //Types and styles
 import {
@@ -78,7 +79,13 @@ const Profile = () => {
 
   return (
     <>
-      <section className="flex flex-col w-full pt-10">
+      <section
+        className={
+          posts?.length === 0
+            ? "absolute flex flex-col w-full pt-10"
+            : "flex flex-col w-full pt-10"
+        }
+      >
         <div className="bg-gray-500 w-full h-[150px] absolute rounded-b-2xl"></div>
 
         <section className="flex flex-col items-center w-full px-6 bg-gray-300 pb-7 md:flex-row md:justify-between lg:justify-start">
@@ -87,10 +94,10 @@ const Profile = () => {
               <img
                 src={`${baseUrl}/${profilePic.path}`}
                 alt="profile-pic"
-                className="rounded-full"
+                className="rounded-full w-34 h-34 sm:w-44 sm:h-44"
               />
             ) : (
-              <img src={profile} alt="profile-pic" />
+              <img src={profile} alt="profile-pic w-44 h-44" />
             )}
           </div>
 
@@ -104,13 +111,22 @@ const Profile = () => {
         </section>
       </section>
 
-      <PostView
-        isShownIn="profile"
-        posts={posts!}
-        comments={comments!}
-        uploads={uploads!}
-        allProfilePics={queryData!.allProfilePics}
-      />
+      {posts?.length === 0 ? (
+        <div className="flex flex-col items-center justify-center w-full h-screen text-4xl font-bold bg-gray-300">
+          <img src={camera} alt="camera-icon" className="w-20 h-20 mt-48" />
+          <h1 className="text-3xl font-bold text-gray-500">No Posts Yet</h1>
+        </div>
+      ) : (
+        <section className="h-[620px] md:h-[650px] bg-gray-400">
+          <PostView
+            isShownIn="profile"
+            posts={posts!}
+            comments={comments!}
+            uploads={uploads!}
+            allProfilePics={queryData!.allProfilePics}
+          />
+        </section>
+      )}
     </>
   );
 };

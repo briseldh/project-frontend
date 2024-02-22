@@ -4,9 +4,11 @@ import http from "../utils/http";
 
 // Icons and Images
 import logoutIconWhite from "../assets/icons/logout-icon-white.svg";
+import { useQueryClient } from "@tanstack/react-query";
 
 const LogoutBtn = () => {
-  const { auth, setAuth } = useContext(AuthContext);
+  const { setAuth } = useContext(AuthContext);
+  const queryClient = useQueryClient();
 
   const [clicked, setClicked] = useState(false);
 
@@ -25,6 +27,9 @@ const LogoutBtn = () => {
           requestStatus: "sent",
         };
       });
+
+      // Clearing the query cache
+      queryClient.clear();
 
       console.log("Logged out successfully");
     } catch (error) {

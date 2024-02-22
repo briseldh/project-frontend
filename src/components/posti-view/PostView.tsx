@@ -23,15 +23,10 @@ import {
   LikesResponse,
   Post,
   ProfilePic,
-  UserData,
 } from "../../types/loaderTypes";
 import { allStyles } from "../../styles/allStyles";
-import {
-  threePointsMenuClose,
-  threePointsMenuOpen,
-} from "../../styles/profilePage";
 import ThreePointsMenu from "../headless-ui/ThreePointsMenu";
-import NewThreePtsMenu from "../headless-ui/NewThreePtsMenu";
+import { Bounce, ToastContainer, toast } from "react-toastify";
 
 type Props = {
   posts: Post[];
@@ -140,6 +135,12 @@ const PostView = ({
   ) => {
     const postId = Number(e.currentTarget.id);
 
+    //Cheking if the user is logged in, if not we show a warning message.
+    if (!auth.id) {
+      console.log("You need to be logged in to like this post!");
+      return;
+    }
+
     if (!userlikes.includes(postId)) {
       try {
         setUserLikes((prevUserLikes) => {
@@ -231,7 +232,7 @@ const PostView = ({
   if (likesIsLoading) {
     return (
       <div className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
-        <Oval height="60" width="60" color="#6464C8" secondaryColor="#6464C8" />
+        <Oval height="60" width="60" color="#6B7280" secondaryColor="#6B7280" />
       </div>
     );
   }
@@ -289,9 +290,7 @@ const PostView = ({
                 </div>
 
                 {isShownIn === "profile" ? (
-                  <>
-                    <ThreePointsMenu post={post} uploads={uploads!} />
-                  </>
+                  <ThreePointsMenu post={post} uploads={uploads!} />
                 ) : null}
               </div>
 

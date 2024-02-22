@@ -109,6 +109,7 @@ const CreatePost = () => {
                 height={"32"}
                 width={"32"}
                 color="#6464C8"
+                secondaryColor="#6464C8"
                 strokeWidth={"4"}
               />
             ) : null}

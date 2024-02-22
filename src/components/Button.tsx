@@ -3,7 +3,7 @@ type Props = {
   disabled: boolean | undefined;
   type: "submit" | "reset" | "button" | undefined;
   styles: string;
-  onClick: () => {} | null;
+  onClick: () => {} | null | void;
 };
 
 const Button = ({ value, disabled, type, styles, onClick }: Props) => {

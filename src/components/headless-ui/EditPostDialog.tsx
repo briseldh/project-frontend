@@ -3,7 +3,6 @@ import { Fragment, useEffect, useState } from "react";
 import http from "../../utils/http";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Oval } from "react-loader-spinner";
-import { useNavigate } from "react-router-dom";
 
 // Icons and Images
 import editIcon from "../../assets/icons/pen-solid.svg";
@@ -32,8 +31,6 @@ export default function EditPostDialog({ post, uploads }: Props) {
     setValue("text", post.text);
   }, []);
 
-  const navigate = useNavigate();
-
   function closeModal() {
     setIsOpen(false);
   }
@@ -47,7 +44,6 @@ export default function EditPostDialog({ post, uploads }: Props) {
   const {
     register,
     setValue,
-    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = form;
@@ -76,9 +72,12 @@ export default function EditPostDialog({ post, uploads }: Props) {
 
   return (
     <>
-      <div className="flex items-center gap-2 px-2 py-1 text-gray-200 rounded-md cursor-pointer hover:bg-black/10">
-        <img src={editIcon} alt="edit-icon" className="w-4 h-4 " />
-        <h4 onClick={openModal}>Edit Post</h4>
+      <div
+        onClick={openModal}
+        className="flex items-center gap-2 px-2 py-1 text-gray-200 rounded-md cursor-pointer hover:bg-black/10"
+      >
+        <img src={editIcon} alt="edit-icon" className="w-4 h-4" />
+        <h4>Edit Post</h4>
       </div>
 
       <Transition appear show={isOpen} as={Fragment}>
@@ -173,7 +172,8 @@ export default function EditPostDialog({ post, uploads }: Props) {
                     <div className="flex self-center justify-center gap-2 mt-4">
                       <button
                         type="submit"
-                        className="inline-flex justify-center px-4 py-2 text-sm font-medium text-blue-900 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                        disabled={isSubmitting}
+                        className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-500 border border-transparent rounded-md hover:bg-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                         // onClick={closeModal}
                       >
                         Confirm Changes
