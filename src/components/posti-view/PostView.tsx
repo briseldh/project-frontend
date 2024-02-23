@@ -2,14 +2,15 @@ import { useContext, useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AuthContext } from "../../context/AuthProvider";
 import http from "../../utils/http";
-import EditPostDialog from "../headless-ui/EditPostDialog";
 import SingleComment from "./SingleComment";
 import { Oval } from "react-loader-spinner";
 
+//Toast
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 //Icons and Imgs
 import xMarkBlack from "../../assets/icons/xmark-solid-black.svg";
-import threePointsMenu from "../../assets/icons/ellipsis-solid.svg";
-import deleteIcon from "../../assets/icons/trash-solid.svg";
 import likeIconFilled from "../../assets/icons/thumbs-up-solid.svg";
 import likeIcon from "../../assets/icons/thumbs-up-regular.svg";
 import commentIcon from "../../assets/icons/comment-regular.svg";
@@ -26,7 +27,6 @@ import {
 } from "../../types/loaderTypes";
 import { allStyles } from "../../styles/allStyles";
 import ThreePointsMenu from "../headless-ui/ThreePointsMenu";
-import { Bounce, ToastContainer, toast } from "react-toastify";
 
 type Props = {
   posts: Post[];
@@ -71,7 +71,6 @@ const PostView = ({
   const [commentsOpen, setCommentsOpen] = useState<number[]>([]);
   const [allLikes, setAllLikes] = useState<Likes[]>();
   const [userlikes, setUserLikes] = useState<number[]>([]);
-  const [pointsMenuOpen, setPointsMenuOpen] = useState<number[]>([]);
   const [styles] = useState(allStyles);
   const [postLikesCount, setPostLikesCount] = useState<PostLikesCount>();
 
@@ -100,22 +99,6 @@ const PostView = ({
       : console.log("There is no posts yet");
   }, [queryLikes]);
 
-  // useEffect(() => {
-  //   console.log("Re Render trigger");
-
-  //   posts
-  //     ? posts.map((post) => {
-  //         const postLikes = queryLikes?.allLikes.filter(
-  //           (like) => like.post_id === post.id
-  //         );
-
-  //         setPostLikesCount((prevLikesCount) => {
-  //           return { ...prevLikesCount, [post.id]: postLikes?.length };
-  //         });
-  //       })
-  //     : console.log("There is no posts yet");
-  // }, []);
-
   console.log(postLikesCount);
   //Handling functions
   const handleCloseCommentsClick = (
@@ -137,7 +120,7 @@ const PostView = ({
 
     //Cheking if the user is logged in, if not we show a warning message.
     if (!auth.id) {
-      console.log("You need to be logged in to like this post!");
+      toast.warn("You need to be logged in to like this post!");
       return;
     }
 
@@ -179,44 +162,16 @@ const PostView = ({
     }
   };
 
-  const handlePointsMenuClick = (
-    e: React.MouseEvent<HTMLImageElement, MouseEvent>
-  ) => {
-    const postId = Number(e.currentTarget.id);
-
-    if (!pointsMenuOpen.includes(postId)) {
-      setPointsMenuOpen((prevValue) => {
-        return [...prevValue, postId];
-      });
-    } else {
-      setPointsMenuOpen((prevValue) => {
-        const likeIdx = prevValue.indexOf(postId);
-        prevValue.splice(likeIdx, 1);
-        return [...prevValue];
-      });
-    }
-  };
-  const handleDeletePostClick = async (
-    e: React.MouseEvent<HTMLHeadingElement, MouseEvent>
-  ) => {
-    const postId = Number(e.currentTarget.id);
-
-    try {
-      await http.get("/sanctum/csrf-cookie");
-      await http.delete(`/api/post/delete/${postId}`);
-
-      //This query invalidation is called when the user deletes the post so that the effect that runs depending on queryData happens.
-      await queryClient.invalidateQueries({ queryKey: ["userDataResponse"] });
-      console.log("Deleted Successfully");
-    } catch (exception) {
-      console.log(exception);
-    }
-  };
-
   const handleViewAllCommentsClick = (
     e: React.MouseEvent<HTMLParagraphElement, MouseEvent>
   ) => {
     const postId = Number(e.currentTarget.id);
+
+    //Cheking if the user is logged in, if not we show a warning message.
+    if (!auth.id) {
+      toast.warn("You need to be logged in to comment on this post!");
+      return;
+    }
 
     setCommentsOpen((prevValue) => {
       if (prevValue.includes(postId)) {
@@ -229,13 +184,13 @@ const PostView = ({
 
   const baseUrl = "http://localhost:80";
 
-  if (likesIsLoading) {
-    return (
-      <div className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
-        <Oval height="60" width="60" color="#6B7280" secondaryColor="#6B7280" />
-      </div>
-    );
-  }
+  // if (likesIsLoading) {
+  //   return (
+  //     <div className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
+  //       <Oval height="60" width="60" color="#6B7280" secondaryColor="#6B7280" />
+  //     </div>
+  //   );
+  // }
 
   return (
     <>
@@ -339,7 +294,7 @@ const PostView = ({
 
                   <p>Like</p>
 
-                  <p>{postLikesCount && postLikesCount[post.id]}</p>
+                  <p>{postLikesCount ? postLikesCount[post.id] : "loading"}</p>
                 </div>
 
                 <div
@@ -403,6 +358,7 @@ const PostView = ({
           </section>
         );
       })}
+      <ToastContainer />
     </>
   );
 };

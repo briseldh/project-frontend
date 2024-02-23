@@ -14,6 +14,7 @@ const CreatePost = () => {
     register,
     control,
     handleSubmit,
+    setError,
     formState: { errors, isSubmitting },
   } = form;
 
@@ -37,6 +38,20 @@ const CreatePost = () => {
       navigate("/profile");
     } catch (exception: any) {
       console.log(exception);
+
+      if (exception.response.status === 400) {
+        const validationErrors = exception.response.data.message;
+
+        for (let [fieldName, errorList] of Object.entries(validationErrors)) {
+          const error = (errorList as any[]).map((message: string) => ({
+            message,
+          }));
+          console.log(error);
+
+          type FieldName = "title" | "text" | "avatar";
+          setError(fieldName as FieldName, error[0]);
+        }
+      }
     }
   };
 
@@ -89,10 +104,13 @@ const CreatePost = () => {
               {...register("avatar", {
                 required: {
                   value: true,
-                  message: "Please enter a file for this post",
+                  message: "Please select a file for this post",
                 },
               })}
             />
+
+            <p className="text-red-600">{errors.avatar?.message}</p>
+            <p className="text-red-600 ">{errors.root?.message}</p>
           </div>
 
           <div className="flex justify-center gap-2">

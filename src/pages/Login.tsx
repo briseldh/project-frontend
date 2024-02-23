@@ -115,15 +115,15 @@ const Login = () => {
               type="email"
               id="email"
               {...register("email", {
-                // required: {
-                //   value: true,
-                //   message: "Please enter an email address",
-                // },
-                // pattern: {
-                //   value:
-                //     /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/,
-                //   message: "Invalid email format!",
-                // },
+                required: {
+                  value: true,
+                  message: "Please enter an email address",
+                },
+                pattern: {
+                  value:
+                    /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/,
+                  message: "Invalid email format!",
+                },
               })}
             />
             <p className="text-red-600">{errors.email?.message}</p>
@@ -136,10 +136,20 @@ const Login = () => {
               type="password"
               id="password"
               {...register("password", {
-                // required: {
-                //   value: true,
-                //   message: "Please enter your password",
-                // },
+                required: {
+                  value: true,
+                  message: "Please enter your password!",
+                },
+                minLength: {
+                  value: 8,
+                  message: "The password must be at least 8 characters!",
+                },
+                pattern: {
+                  value:
+                    /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z])(?=.*?[#?!@$%^.,><&*-])/,
+                  message:
+                    "The password must contain a capital letter, a lowercase letter, a number and a special character!",
+                },
               })}
             />
             <p className="text-red-600">{errors.password?.message}</p>

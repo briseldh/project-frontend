@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Oval } from "react-loader-spinner";
 
 import { useQuery } from "@tanstack/react-query";
@@ -6,8 +6,12 @@ import { useQuery } from "@tanstack/react-query";
 //Types and styles
 import { Comments, Likes, Post, PostsResponse } from "../types/loaderTypes";
 import PostView from "../components/posti-view/PostView";
+import { AuthContext } from "../context/AuthProvider";
+import OfflinePostView from "../components/posti-view/OfflinePostView";
 
 const Home = () => {
+  const { auth } = useContext(AuthContext);
+
   const { data: postsQuery, isLoading: postsAreLoading } =
     useQuery<PostsResponse>({
       queryKey: ["postsResponse"],
@@ -23,8 +27,6 @@ const Home = () => {
       },
       staleTime: 1000,
     });
-
-  console.log(postsQuery);
 
   const [posts, setPosts] = useState<Post[]>();
   const [comments, setComments] = useState<Comments[]>();
@@ -60,16 +62,33 @@ const Home = () => {
     );
   }
 
-  return (
-    <section className="pt-16 bg-gray-400">
-      <PostView
-        isShownIn="home"
-        posts={posts!}
-        comments={comments!}
-        allProfilePics={postsQuery!.allProfilePics}
-      />
-    </section>
-  );
+  if (auth.id) {
+    return (
+      <section className="pt-16 bg-gray-400">
+        {posts && comments && postsQuery && (
+          <PostView
+            isShownIn="home"
+            posts={posts}
+            comments={comments}
+            allProfilePics={postsQuery.allProfilePics}
+          />
+        )}
+      </section>
+    );
+  } else {
+    return (
+      <section className="pt-16 bg-gray-400">
+        {posts && comments && postsQuery && (
+          <OfflinePostView
+            isShownIn="home"
+            posts={posts}
+            comments={comments}
+            allProfilePics={postsQuery.allProfilePics}
+          />
+        )}
+      </section>
+    );
+  }
 };
 
 export default Home;

@@ -118,13 +118,15 @@ const Profile = () => {
         </div>
       ) : (
         <section className="h-[620px] md:h-[650px] bg-gray-400">
-          <PostView
-            isShownIn="profile"
-            posts={posts!}
-            comments={comments!}
-            uploads={uploads!}
-            allProfilePics={queryData!.allProfilePics}
-          />
+          {posts && comments && uploads && queryData && (
+            <PostView
+              isShownIn="profile"
+              posts={posts}
+              comments={comments}
+              uploads={uploads}
+              allProfilePics={queryData.allProfilePics}
+            />
+          )}
         </section>
       )}
     </>

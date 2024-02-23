@@ -13,8 +13,12 @@ const Nav = () => {
   const { auth } = useContext(AuthContext);
 
   const handleMenuToggleClick = () => {
-    setOpenMenu(!openMenu);
-    console.log("Nav Toggeld");
+    const main = document.querySelector<HTMLElement>("main");
+    const mainWidth = main!.clientWidth + 10;
+    if (mainWidth < 640) {
+      setOpenMenu(!openMenu);
+      console.log("Nav Toggeld");
+    }
   };
 
   return (

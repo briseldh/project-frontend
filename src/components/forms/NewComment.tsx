@@ -20,16 +20,16 @@ const NewComment = ({ postId }: Props) => {
     register,
     resetField,
     handleSubmit,
-    formState: { isSubmitting },
+    formState: { isSubmitting, errors },
   } = form;
 
   const onSubmit: SubmitHandler<CommentFormValues> = async (data, e) => {
     try {
+      resetField("text");
       await http.get("/sanctum/csrf-cookie");
       await http.post(`/api/comment/insert/${e?.target.id}`, data);
       await queryClient.invalidateQueries({ queryKey: ["userDataResponse"] });
-
-      resetField("text");
+      await queryClient.invalidateQueries({ queryKey: ["postsResponse"] });
     } catch (exception: any) {
       console.log(exception);
     }
@@ -51,8 +51,16 @@ const NewComment = ({ postId }: Props) => {
         className="w-full h-10 p-2 bg-gray-200 border-2 border-gray-200 rounded-2xl"
         type="text"
         id="comment"
-        {...register("text", {})}
+        {...register("text", {
+          required: {
+            value: true,
+            message: "Can not send empty comments",
+          },
+        })}
       />
+      {errors.text ? (
+        <p className="text-red-500">{`${errors.text.message}!`}</p>
+      ) : null}
       <div className="flex items-center gap-2">
         <Button
           styles={
@@ -61,7 +69,7 @@ const NewComment = ({ postId }: Props) => {
               : "w-[30%]  p-1 text-white text-xs bg-blue-400 rounded drop-shadow-md"
           }
           disabled={isSubmitting}
-          value="Submit"
+          value="Send"
           type="submit"
           onClick={() => null}
         />

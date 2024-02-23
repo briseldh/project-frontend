@@ -20,8 +20,6 @@ const SingleComment = ({ comments, post, profilePics }: Props) => {
 
   const [isSending, setIsSending] = useState<number[]>([]);
 
-  console.log(profilePics);
-
   //Handling functions
   const handleCommentDeleteClick = async (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>
@@ -41,6 +39,7 @@ const SingleComment = ({ comments, post, profilePics }: Props) => {
 
       //This query invalidation is called when the user deletes the post so that the effect that runs depending on queryData happens.
       await queryClient.invalidateQueries({ queryKey: ["userDataResponse"] });
+      await queryClient.invalidateQueries({ queryKey: ["postsResponse"] });
       console.log("Deleted Successfully");
     } catch (exception) {
       console.log(exception);

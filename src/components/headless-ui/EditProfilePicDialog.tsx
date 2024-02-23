@@ -28,6 +28,7 @@ export default function EditProfilePicDialog({ profilePicId }: Props) {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors, isSubmitting },
   } = form;
 
@@ -51,6 +52,20 @@ export default function EditProfilePicDialog({ profilePicId }: Props) {
       closeModal();
     } catch (exception: any) {
       console.log(exception);
+
+      if (exception.response.status === 400) {
+        const validationErrors = exception.response.data.message;
+
+        for (let [fieldName, errorList] of Object.entries(validationErrors)) {
+          const error = (errorList as any[]).map((message: string) => ({
+            message,
+          }));
+          console.log(error);
+
+          type FieldName = "avatar";
+          setError(fieldName as FieldName, error[0]);
+        }
+      }
     }
 
     console.log("Formular Submitted");
@@ -125,7 +140,7 @@ export default function EditProfilePicDialog({ profilePicId }: Props) {
 
                     <div className="flex items-center self-center justify-center gap-2 mt-4">
                       <Button
-                        styles="inline-flex justify-center px-4 py-2 text-sm font-medium text-blue-900 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                        styles="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-500 border border-transparent rounded-md hover:bg-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                         disabled={isSubmitting}
                         value="Change"
                         type="submit"

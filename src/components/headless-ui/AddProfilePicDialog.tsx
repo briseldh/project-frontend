@@ -48,9 +48,17 @@ export default function EditProfilePicDialog() {
       console.log(exception);
 
       if (exception.response.status === 400) {
-        const message = exception.response.data.message;
+        const validationErrors = exception.response.data.message;
 
-        setError("avatar", { type: "error", message: message });
+        for (let [fieldName, errorList] of Object.entries(validationErrors)) {
+          const error = (errorList as any[]).map((message: string) => ({
+            message,
+          }));
+          console.log(error);
+
+          type FieldName = "avatar";
+          setError(fieldName as FieldName, error[0]);
+        }
       }
     }
   };

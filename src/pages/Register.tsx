@@ -27,8 +27,6 @@ const Register = () => {
     formState: { errors, isSubmitting },
   } = form;
 
-  console.log(auth);
-
   const onSubmit = async (data: RegisterFormValues) => {
     try {
       await http.get("/sanctum/csrf-cookie");
@@ -73,8 +71,6 @@ const Register = () => {
 
           setError(fieldName as FieldName, errors[0]);
         }
-
-        // console.log(Object.entries(errors));
       }
     }
   };
@@ -99,18 +95,18 @@ const Register = () => {
               type="text"
               id="username"
               {...register("username", {
-                // required: {
-                //   value: true,
-                //   message: "Please enter your username",
-                // },
-                // minLength: {
-                //   value: 5,
-                //   message: "The username must be at least 5 characters",
-                // },
-                // maxLength: {
-                //   value: 12,
-                //   message: "The username must not exceed 12 characters",
-                // },
+                required: {
+                  value: true,
+                  message: "Please enter your username",
+                },
+                minLength: {
+                  value: 5,
+                  message: "The username must be at least 5 characters",
+                },
+                maxLength: {
+                  value: 12,
+                  message: "The username must not exceed 12 characters",
+                },
               })}
             />
             <p className="text-red-600">{errors.username?.message}</p>
@@ -122,15 +118,15 @@ const Register = () => {
               type="email"
               id="email"
               {...register("email", {
-                // required: {
-                //   value: true,
-                //   message: "Please enter your email address",
-                // },
-                // pattern: {
-                //   value:
-                //     /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/,
-                //   message: "Invalid email format!",
-                // },
+                required: {
+                  value: true,
+                  message: "Please enter your email address",
+                },
+                pattern: {
+                  value:
+                    /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/,
+                  message: "Invalid email format!",
+                },
               })}
             />
             <p className="text-red-600">{errors.email?.message}</p>
@@ -139,27 +135,23 @@ const Register = () => {
             <label htmlFor="password">Password</label>
             <input
               className="h-10 p-2 border-2 border-gray-300 rounded"
-              type="text"
+              type="password"
               id="password"
               {...register("password", {
-                // required: {
-                //   value: true,
-                //   message: "Please enter your password",
-                // },
-                // minLength: {
-                //   value: 8,
-                //   message: "The password must be at least 8 characters",
-                // },
-                // maxLength: {
-                //   value: 32,
-                //   message: "The password must not exceed 32 characters",
-                // },
-                // pattern: {
-                //   value:
-                //     /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*-]).{8,}$/,
-                //   message:
-                //     "The password must contain a capital letter, a small letter, a number and a special character.",
-                // },
+                required: {
+                  value: true,
+                  message: "Please enter your password",
+                },
+                minLength: {
+                  value: 8,
+                  message: "The password must be at least 8 characters",
+                },
+                pattern: {
+                  value:
+                    /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z])(?=.*?[#?!@$%^.,><&*-])/,
+                  message:
+                    "The password must contain a capital letter, a lowercase letter, a number and a special character!",
+                },
               })}
             />
 
@@ -181,6 +173,7 @@ const Register = () => {
                 width={"32"}
                 color="#6464C8"
                 strokeWidth={"4"}
+                secondaryColor="#6464C8"
               />
             ) : null}
           </div>
