@@ -23,7 +23,7 @@ type Props = {
   isShownIn: "home" | "profile";
 };
 
-const OfflinePostView = ({
+const UnauthPostView = ({
   posts,
   comments,
   uploads,
@@ -178,4 +178,4 @@ const OfflinePostView = ({
   );
 };
 
-export default OfflinePostView;
+export default UnauthPostView;

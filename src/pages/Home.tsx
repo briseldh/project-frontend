@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { Oval } from "react-loader-spinner";
+import UnauthPostView from "../components/posti-view/UnauthPostView";
 
 import { useQuery } from "@tanstack/react-query";
 
@@ -7,7 +8,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Comments, Likes, Post, PostsResponse } from "../types/loaderTypes";
 import PostView from "../components/posti-view/PostView";
 import { AuthContext } from "../context/AuthProvider";
-import OfflinePostView from "../components/posti-view/OfflinePostView";
 
 const Home = () => {
   const { auth } = useContext(AuthContext);
@@ -79,7 +79,7 @@ const Home = () => {
     return (
       <section className="pt-16 bg-gray-400">
         {posts && comments && postsQuery && (
-          <OfflinePostView
+          <UnauthPostView
             isShownIn="home"
             posts={posts}
             comments={comments}
