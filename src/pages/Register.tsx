@@ -162,7 +162,7 @@ const Register = () => {
             <Button
               styles=""
               disabled={isSubmitting}
-              value="Login"
+              value="Register"
               type="submit"
               onClick={() => null}
             />

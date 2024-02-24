@@ -14,10 +14,14 @@ const Nav = () => {
 
   const handleMenuToggleClick = () => {
     const main = document.querySelector<HTMLElement>("main");
-    const mainWidth = main!.clientWidth + 10;
-    if (mainWidth < 640) {
-      setOpenMenu(!openMenu);
-      console.log("Nav Toggeld");
+
+    if (main) {
+      const mainWidth = main?.clientWidth + 10;
+
+      if (mainWidth < 640) {
+        setOpenMenu(!openMenu);
+        console.log("Nav Toggeld");
+      }
     }
   };
 
