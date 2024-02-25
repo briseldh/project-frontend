@@ -37,22 +37,6 @@ export const AuthContext = createContext<AuthContext>(defaultAuthContext);
 const AuthProvider = ({ children }: Props) => {
   const [auth, setAuth] = useState<Auth>(defaultAuth);
 
-  // if (data) {
-  //   const userData = data.userData;
-
-  //   useEffect(() => {
-  //     setAuth((prevAuth) => {
-  //       return {
-  //         ...prevAuth,
-  //         id: userData.id,
-  //         username: userData.name,
-  //         role: userData.role,
-  //         requestStatus: "sent",
-  //       };
-  //     });
-  //   }, [data]);
-  // }
-
   const { data, status } = useQuery({
     queryKey: ["auth"],
     queryFn: async () => {

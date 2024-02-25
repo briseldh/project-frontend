@@ -14,15 +14,11 @@ import PrivateLayout from "./layouts/PrivateLayout";
 import RootError from "./errors/RootError";
 
 // Pages
-// import Login from "./pages/Login";
 const Login = lazy(() => import("./pages/Login"));
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
 import CreatePost from "./pages/CreatePost";
-// const Profile = lazy(() => import("./pages/Profile"));
-// const profileLoader = lazy(() => import("./pages/Profile"));
-// import { profileLoader } from "./pages/Profile";
 import { Oval } from "react-loader-spinner";
 import Profile from "./pages/Profile";
 
@@ -33,11 +29,7 @@ const router = createBrowserRouter(
         <Route path="*" element={<NotFound />} />
 
         <Route path="/" element={<RootLayout />}>
-          <Route
-            index
-            element={<Home />}
-            // loader={HomeLoader(homeQueryClient)}
-          />
+          <Route index element={<Home />} />
 
           <Route
             path="/login"
@@ -64,11 +56,7 @@ const router = createBrowserRouter(
           <Route element={<PrivateLayout />}>
             <Route path="/create-post" element={<CreatePost />} />
 
-            <Route
-              path="profile"
-              element={<Profile />}
-              // loader={ProfileLoader(profileQueryClient)}
-            />
+            <Route path="profile" element={<Profile />} />
           </Route>
         </Route>
       </Route>

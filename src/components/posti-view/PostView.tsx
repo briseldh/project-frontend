@@ -3,7 +3,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AuthContext } from "../../context/AuthProvider";
 import http from "../../utils/http";
 import SingleComment from "./SingleComment";
-import { Oval } from "react-loader-spinner";
 
 //Toast
 import { ToastContainer, toast } from "react-toastify";
@@ -99,7 +98,6 @@ const PostView = ({
       : console.log("There is no posts yet");
   }, [queryLikes]);
 
-  console.log(postLikesCount);
   //Handling functions
   const handleCloseCommentsClick = (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>
@@ -183,14 +181,6 @@ const PostView = ({
   };
 
   const baseUrl = "http://localhost:80";
-
-  // if (likesIsLoading) {
-  //   return (
-  //     <div className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
-  //       <Oval height="60" width="60" color="#6B7280" secondaryColor="#6B7280" />
-  //     </div>
-  //   );
-  // }
 
   return (
     <>
@@ -294,7 +284,7 @@ const PostView = ({
 
                   <p>Like</p>
 
-                  <p>{postLikesCount ? postLikesCount[post.id] : "loading"}</p>
+                  <p>{postLikesCount ? postLikesCount[post.id] : null}</p>
                 </div>
 
                 <div

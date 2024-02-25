@@ -91,6 +91,7 @@ const Register = () => {
           <div className="flex flex-col">
             <label htmlFor="username">Username</label>
             <input
+              aria-invalid={errors.username ? true : false}
               className="h-10 p-2 border-2 border-gray-300 rounded"
               type="text"
               id="username"
@@ -114,6 +115,7 @@ const Register = () => {
           <div className="flex flex-col">
             <label htmlFor="email">E-mail</label>
             <input
+              aria-invalid={errors.email ? true : false}
               className="h-10 p-2 border-2 border-gray-300 rounded"
               type="email"
               id="email"
@@ -134,6 +136,7 @@ const Register = () => {
           <div className="flex flex-col">
             <label htmlFor="password">Password</label>
             <input
+              aria-invalid={errors.password ? true : false}
               className="h-10 p-2 border-2 border-gray-300 rounded"
               type="password"
               id="password"

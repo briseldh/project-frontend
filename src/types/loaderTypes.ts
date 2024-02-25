@@ -1,15 +1,13 @@
 export type ProfileLoaderData = {
     userDataResponse: Promise<UserDataResponse>;
     likesResponse: Promise<LikesResponse>;
-    // userDataResponse: UserDataResponse;
-    // likesResponse: LikesResponse;
+
 }
 
 export type HomeLoaderData = {
-    // postsResponse: PostsResponse,
+
     postsResponse: Promise<PostsResponse>,
-    // postsResponsePromise: Promise<PostsResponse>,
-    // likesResponse: LikesResponse
+
 }
 
 export type UserDataResponse = {
@@ -30,7 +28,7 @@ export type PostsResponse = {
 export type LikesResponse = {
     likes: Likes[],
     allLikes: Likes[];
-    // likesCount: number;
+
 }
 
 export type UserData = {

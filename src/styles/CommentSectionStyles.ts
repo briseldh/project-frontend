@@ -14,7 +14,7 @@ export type Styles = {
     postWrapper: "overflow-hidden bg-gray-300 rounded-lg md:w-[70%] lg:w-[710px]",
     viewAllCommentsLink:
       "pt-2 px-4 font-medium text-gray-800 cursor-pointer hover:underline inline-block",
-    commentsWrapper: "overflow-hidden max-h-[225px] bg-gray-300",
+    commentsWrapper: "overflow-hidden max-h-[230px] bg-gray-300",
     writeNewComment: "hidden",
   };
   

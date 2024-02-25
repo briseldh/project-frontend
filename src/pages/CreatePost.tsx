@@ -73,6 +73,7 @@ const CreatePost = () => {
           <div className="flex flex-col">
             <label htmlFor="title">Title</label>
             <input
+              aria-invalid={errors.title ? true : false}
               className="h-10 p-2 border-2 border-gray-300 rounded"
               type="text"
               id="title"
@@ -99,6 +100,7 @@ const CreatePost = () => {
               Chose Image
             </label>
             <input
+              aria-invalid={errors.avatar ? true : false}
               type="file"
               id="file"
               {...register("avatar", {

@@ -49,6 +49,7 @@ const NewComment = ({ postId }: Props) => {
       </label>
       <input
         className="w-full h-10 p-2 bg-gray-200 border-2 border-gray-200 rounded-2xl"
+        aria-invalid={errors.text ? true : false}
         type="text"
         id="comment"
         {...register("text", {

@@ -117,6 +117,7 @@ export default function EditProfilePicDialog() {
                         Chose Image
                       </label>
                       <input
+                        aria-invalid={errors.avatar ? true : false}
                         type="file"
                         id="file"
                         {...register("avatar", {

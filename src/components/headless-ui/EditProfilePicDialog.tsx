@@ -126,6 +126,7 @@ export default function EditProfilePicDialog({ profilePicId }: Props) {
                         Chose Image
                       </label>
                       <input
+                        aria-invalid={errors.avatar ? true : false}
                         type="file"
                         id="file"
                         {...register("avatar", {

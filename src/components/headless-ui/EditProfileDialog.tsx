@@ -8,12 +8,15 @@ import AddProfilePicDialog from "./AddProfilePicDialog";
 //Image and Icons
 import profile from "../../assets/imgs/149071.png";
 import XmarkBlack from "../../assets/icons/xmark-solid-black.svg";
+import shield from "../../assets/icons/shield-solid.svg";
+import deactivate from "../../assets/icons/ban-solid.svg";
 
 //Types and Styles
 import { ProfilePic } from "../../types/loaderTypes";
 import http from "../../utils/http";
 import { useQueryClient } from "@tanstack/react-query";
 import { Oval } from "react-loader-spinner";
+import DeactivateAccDialog from "./DeactivateAccDialog";
 
 type Props = {
   profilePic: ProfilePic;
@@ -158,6 +161,17 @@ export default function EditProfileDialog({ profilePic }: Props) {
                           </>
                         )}
                       </div>
+
+                      {/* <div className="flex items-center gap-2 p-2 mt-4 rounded-md cursor-pointer bg-black/10">
+                        <img
+                          src={shield}
+                          alt="shield-icon"
+                          className="w-4 h-4"
+                        />
+                        <p>Password and security</p>
+                      </div> */}
+
+                      <DeactivateAccDialog />
                     </div>
                   </div>
 
