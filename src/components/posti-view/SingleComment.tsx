@@ -60,7 +60,15 @@ const SingleComment = ({ comments, post, profilePics }: Props) => {
             <div className="flex gap-2">
               {profilePics.length !== 0 ? (
                 profilePics.map((profilePic) => {
-                  if (profilePic?.user_id !== comment.user_id) return;
+                  if (profilePic?.user_id !== comment.user_id) {
+                    return (
+                      <img
+                        src={profile}
+                        alt="commenter-profile-pic"
+                        className="w-10 h-10"
+                      />
+                    );
+                  }
 
                   return (
                     <div

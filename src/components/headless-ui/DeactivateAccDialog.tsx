@@ -53,7 +53,7 @@ export default function DeactivateAccDialog() {
 
   return (
     <>
-      <div className="inset-0 flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-black/20 hover:bg-black/30">
+      <div className="inset-0 flex items-center justify-center gap-2 px-4 py-2 mt-4 rounded-md bg-black/20 hover:bg-black/30">
         <img src={deactivate} alt="deactivate-icon" className="w-4 h-4" />
 
         <button
@@ -99,8 +99,10 @@ export default function DeactivateAccDialog() {
                   </Dialog.Title>
                   <div className="mt-2">
                     <p className="text-sm text-gray-500">
-                      Are you sure you want to delete your account? You can not
-                      get it again after deleting it.
+                      Are you sure you want to delete your account? After
+                      deactivating your account everything abouth this account
+                      will be deleted and you can not get it back after deleting
+                      it.
                     </p>
                   </div>
 
