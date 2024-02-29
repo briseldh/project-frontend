@@ -21,9 +21,6 @@ import {
 } from "../types/loaderTypes";
 
 const Profile = () => {
-  const { auth } = useContext(AuthContext);
-  const queryClient = useQueryClient();
-
   const { data: queryData, isLoading: dataIsLoading } =
     useQuery<UserDataResponse>({
       queryKey: ["userDataResponse"],
