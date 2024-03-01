@@ -1,10 +1,9 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 import EditProfileDialog from "../components/headless-ui/EditProfileDialog";
 import { Oval } from "react-loader-spinner";
-import { AuthContext } from "../context/AuthProvider";
 import PostView from "../components/posti-view/PostView";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 //Image and Icons
 import profile from "../assets/imgs/149071.png";
