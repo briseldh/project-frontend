@@ -49,23 +49,22 @@ const PostView = ({
   const { auth } = useContext(AuthContext);
   const queryClient = useQueryClient();
 
-  const { data: queryLikes, isLoading: likesIsLoading } =
-    useQuery<LikesResponse>({
-      queryKey: ["userLikesResponse"],
-      queryFn: async () => {
-        const res = await fetch("http://localhost:80/api/like/getUserLikes", {
-          credentials: "include",
-        });
+  const { data: queryLikes } = useQuery<LikesResponse>({
+    queryKey: ["userLikesResponse"],
+    queryFn: async () => {
+      const res = await fetch("http://localhost:80/api/like/getUserLikes", {
+        credentials: "include",
+      });
 
-        if (!res.ok) {
-          console.log("Failed to fetch data");
-          throw new Error(`HTTP Error: ${res.status}`);
-        }
+      if (!res.ok) {
+        console.log("Failed to fetch data");
+        throw new Error(`HTTP Error: ${res.status}`);
+      }
 
-        return res.json();
-      },
-      staleTime: 1000,
-    });
+      return res.json();
+    },
+    staleTime: 1000,
+  });
 
   const [commentsOpen, setCommentsOpen] = useState<number[]>([]);
   const [allLikes, setAllLikes] = useState<Likes[]>();
