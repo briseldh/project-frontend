@@ -12,7 +12,7 @@ import { RegisterFormValues } from "../types/formTypes";
 import { UserData } from "../types/loaderTypes";
 
 const Register = () => {
-  const { auth, setAuth } = useContext(AuthContext);
+  const { setAuth } = useContext(AuthContext);
 
   const navigate = useNavigate();
   const { state } = useLocation();
