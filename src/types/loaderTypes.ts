@@ -5,9 +5,7 @@ export type ProfileLoaderData = {
 }
 
 export type HomeLoaderData = {
-
     postsResponse: Promise<PostsResponse>,
-
 }
 
 export type UserDataResponse = {
