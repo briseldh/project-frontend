@@ -78,6 +78,7 @@ const PostView = ({
       console.log("The likesResponseQuery doesent exist");
       return;
     }
+    setAllLikes(allLikes);
     setAllLikes(queryLikes.allLikes);
 
     const likeIds = queryLikes.likes.map((like: Likes) => like.post_id);

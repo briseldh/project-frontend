@@ -3,14 +3,7 @@ import { Fragment, useState } from "react";
 import threePointsMenu from "../../assets/icons/ellipsis-solid.svg";
 import deleteIcon from "../../assets/icons/trash-solid.svg";
 import http from "../../utils/http";
-import EditPostDialog from "./EditPostDialog";
-import { File, Post } from "../../types/loaderTypes";
 import { useQueryClient } from "@tanstack/react-query";
-
-type Props = {
-  post: Post;
-  uploads: File[];
-};
 
 export default function ProfileSettings() {
   const queryClient = useQueryClient();

@@ -5,15 +5,12 @@ import { Fragment, useContext, useState } from "react";
 import deactivate from "../../assets/icons/ban-solid.svg";
 import http from "../../utils/http";
 import { Oval } from "react-loader-spinner";
-import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { AuthContext, defaultAuth } from "../../context/AuthProvider";
 
 export default function DeactivateAccDialog() {
   const { setAuth } = useContext(AuthContext);
   const queryClient = useQueryClient();
-
-  const navigate = useNavigate();
 
   let [isOpen, setIsOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);

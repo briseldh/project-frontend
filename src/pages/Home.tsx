@@ -48,6 +48,7 @@ const Home = () => {
     //Checking if the allLikes state is an array before mapping. If I don't check that than I get a TS error.
     if (Array.isArray(allLikes)) {
       const likeIds = allLikes?.map((like) => like.post_id);
+      setUserLikes(userLikes);
       setUserLikes(likeIds);
     }
 

@@ -13,6 +13,7 @@ import { UserData } from "../types/loaderTypes";
 
 const Login = () => {
   const { auth, setAuth } = useContext(AuthContext);
+  console.log(auth);
 
   const navigate = useNavigate();
   const { state } = useLocation();

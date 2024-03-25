@@ -8,8 +8,6 @@ import AddProfilePicDialog from "./AddProfilePicDialog";
 //Image and Icons
 import profile from "../../assets/imgs/149071.png";
 import XmarkBlack from "../../assets/icons/xmark-solid-black.svg";
-import shield from "../../assets/icons/shield-solid.svg";
-import deactivate from "../../assets/icons/ban-solid.svg";
 
 //Types and Styles
 import { ProfilePic } from "../../types/loaderTypes";

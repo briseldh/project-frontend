@@ -1,7 +1,5 @@
 import { createContext, useState, ReactNode, useEffect } from "react";
-import http from "../utils/http";
 import { useQuery } from "@tanstack/react-query";
-import { UserDataResponse } from "../types/loaderTypes";
 
 type Props = {
   children: ReactNode;
