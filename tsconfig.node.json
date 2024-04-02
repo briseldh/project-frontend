@@ -8,3 +8,9 @@
   },
   "include": ["vite.config.ts"]
 }
+
+// How to fix Vercel deployment module not found error
+// git rm -r --cached .
+// git add --all .
+// git commit -a -m "Versioning untracked files"
+// git push origin master
